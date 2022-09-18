@@ -87,6 +87,7 @@ def main(event, context):
 
     # Sort plays by endTime
     plays.sort(key=lambda x: x.endTime)
+    print(f"Found {len(plays)} new plays")
     # print(plays)
 
     # Given a letter like A, return B; if it's Z, return A
