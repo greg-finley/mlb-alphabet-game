@@ -11,6 +11,7 @@ import requests
 import tweepy
 from google.cloud import bigquery
 from PIL import Image
+from pytz import timezone, utc
 
 
 @dataclass
@@ -99,6 +100,15 @@ def main(event, context):
             return "an"
         return "a"
 
+    # change a UTC time like "2022-09-18T01:06:53.861Z" to Pacific time
+    def convert_time(time: str) -> str:
+        return (
+            datetime.datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%fZ")
+            .replace(tzinfo=utc)
+            .astimezone(timezone("US/Pacific"))
+            .strftime("%-m/%-d %-I:%M %p Pacific")
+        )
+
     for p in plays:
         if p.is_hit and state.next_letter in p.batter_name[0].upper():
             print(
@@ -114,7 +124,7 @@ def main(event, context):
 
             media = api.media_upload(filename="dummy_string", file=b)
             api.update_status(
-                status=f"{p.batter_name} has {a_or_an(state.next_letter)} {state.next_letter} in his name, and he just hit a {p.event.lower()}! The letter is now {next_letter(state.next_letter)}! We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022.",
+                status=f"{p.batter_name} has {a_or_an(state.next_letter)} {state.next_letter} in his name, and he just hit a {p.event.lower()} at {convert_time(p.endTime)}! The letter is now {next_letter(state.next_letter)}! We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022.",
                 media_ids=[media.media_id],
             )
 
