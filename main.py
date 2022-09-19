@@ -10,11 +10,17 @@ from dataclasses import dataclass
 import requests
 import tweepy  # type: ignore
 from bs4 import BeautifulSoup  # type: ignore
+from dotenv import load_dotenv
 from google.cloud import bigquery
 from PIL import Image  # type: ignore
 from pytz import timezone, utc
 
+load_dotenv()
+
 MLB_API_BASE_URL = "https://statsapi.mlb.com/api/v1"
+
+DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
+LOCAL = os.environ.get("LOCAL", "false").lower() == "true"
 
 
 @dataclass
@@ -28,10 +34,6 @@ class State:
     @property
     def next_letter(self) -> str:
         return chr(ord(self.current_letter) + 1) if self.current_letter != "Z" else "A"
-
-    @property
-    def current_letter_article(self) -> str:
-        return "an" if self.current_letter in "AEIOU" else "a"
 
 
 @dataclass
@@ -113,7 +115,9 @@ class MLBClient:
                 "allPlays"
             ]
             for p in all_plays:
-                if p["about"]["isComplete"] and p["about"]["endTime"] > state.last_time:
+                if p["about"]["isComplete"] and (
+                    DRY_RUN or p["about"]["endTime"] > state.last_time
+                ):
                     play = Play(
                         event=p["result"]["event"],
                         is_hit=p["result"]["eventType"]
@@ -164,20 +168,21 @@ His name has the letter {state.current_letter}, so the next letter in the MLB Al
 We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022."""
         print(tweet_text)
 
-        # Get the batter's headshot
-        data = requests.get(
-            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{play.batter_id}/headshot/67/current"
-        ).content
-        img = Image.open(io.BytesIO(data))
-        b = io.BytesIO()
-        img.save(b, format="PNG")
-        b.seek(0)
+        if not DRY_RUN:
+            # Get the batter's headshot
+            data = requests.get(
+                f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{play.batter_id}/headshot/67/current"
+            ).content
+            img = Image.open(io.BytesIO(data))
+            b = io.BytesIO()
+            img.save(b, format="PNG")
+            b.seek(0)
 
-        media = self.api.media_upload(filename="dummy_string", file=b)
-        self.api.update_status(
-            status=tweet_text,
-            media_ids=[media.media_id],
-        )
+            media = self.api.media_upload(filename="dummy_string", file=b)
+            self.api.update_status(
+                status=tweet_text,
+                media_ids=[media.media_id],
+            )
 
 
 class BigQueryClient:
@@ -196,8 +201,10 @@ class BigQueryClient:
     def update_state(self, state: State) -> None:
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, last_time = '{state.last_time}' WHERE 1=1;"
         print(q)
-        self.client.query(q).result()
+        if not DRY_RUN:
+            self.client.query(q).result()
 
 
-# Uncomment this if you want to run locally. Google Cloud Function will run main() automatically.
-# main({}, {})
+# Invoke the function is running locally. Google Cloud Function will run main() automatically.
+if LOCAL:
+    main({}, {})
