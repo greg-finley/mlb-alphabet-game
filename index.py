@@ -112,7 +112,11 @@ def main(event, context):
 
     for p in plays:
         if p.is_hit and state.next_letter in p.batter_name.upper():
-            tweet_text = f"{p.batter_name} has {a_or_an(state.next_letter)} {state.next_letter} in his name, and he just hit a {p.event.lower()} at {convert_time(p.endTime)}! The letter is now {next_letter(state.next_letter)}! We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022."
+            tweet_text = f"""{p.batter_name} has {a_or_an(state.next_letter)} {state.next_letter} in his name, and he just hit a {p.event.lower()} at {convert_time(p.endTime)}!
+            
+            The next letter is now {next_letter(state.next_letter)}!
+            
+            We have cycled through the alphabet {state.times_cycled if state.next_letter != 'Z' else state.times_cycled + 1} times since this bot was created on Sept 17, 2022."""
             print(tweet_text)
             data = requests.get(
                 f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{p.batter_id}/headshot/67/current"
