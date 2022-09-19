@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 import requests
 import tweepy  # type: ignore
-from bs4 import BeautifulSoup  # type: ignore
 from dotenv import load_dotenv
 from google.cloud import bigquery
 from PIL import Image  # type: ignore
@@ -74,7 +73,7 @@ def main(event, context):
         for p in unprocessed_plays:
             if p.is_hit and state.current_letter in p.batter_name.upper():
                 # Tweet it
-                twitter_client.tweet(p, state, mlb_client)
+                twitter_client.tweet(p, state)
 
                 # Update the state
                 state.current_letter = state.next_letter
@@ -133,17 +132,6 @@ class MLBClient:
         print(f"Found {len(plays)} new plays")
         return plays
 
-    def get_player_twitter_handle(self, player_id: int) -> str:
-        """Get the player's Twitter handle. Unfortunately, the MLB API doesn't provide this, so we have to scrape it."""
-        page = requests.get(f"https://www.mlb.com/player/{player_id}")
-        soup = BeautifulSoup(page.content, "html.parser")
-        results = soup.find(id="player")
-        try:
-            twitter_element = results.find("li", class_="twitter")
-            return f" {twitter_element.find('a', href=True)['href'].split('/')[3]}"
-        except AttributeError:
-            return ""
-
 
 class TwitterClient:
     def __init__(self):
@@ -157,11 +145,8 @@ class TwitterClient:
         )
         self.api = tweepy.API(auth)
 
-    def tweet(self, play: Play, state: State, mlb_client: MLBClient) -> None:
-        # Get the batter's Twitter handle
-        batter_twitter_handle = mlb_client.get_player_twitter_handle(play.batter_id)
-
-        tweet_text = f"""{play.batter_name}{batter_twitter_handle} has just hit a {play.event.lower()} at {play.endTime_pacific}!
+    def tweet(self, play: Play, state: State) -> None:
+        tweet_text = f"""{play.batter_name} has just hit a {play.event.lower()} at {play.endTime_pacific}!
             
 His name has the letter {state.current_letter}, so the next letter in the MLB Alphabet Game is now {state.next_letter}!
         
