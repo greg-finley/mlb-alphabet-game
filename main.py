@@ -72,13 +72,16 @@ def main(event, context):
     if unprocessed_plays:
         for p in unprocessed_plays:
             if p.is_hit and state.current_letter in p.batter_name.upper():
-                # Tweet it
-                twitter_client.tweet(p, state)
+                # Find all matches in the batter's name amid the upcoming letters and update the state
+                matching_letters: list[str] = []
+                while state.current_letter in p.batter_name.upper():
+                    matching_letters.append(state.current_letter)
+                    state.current_letter = state.next_letter
+                    if state.current_letter == "A":
+                        state.times_cycled += 1
 
-                # Update the state
-                state.current_letter = state.next_letter
-                if state.current_letter == "A":
-                    state.times_cycled += 1
+                # Tweet it
+                twitter_client.tweet(p, state, matching_letters)
 
         # At the end, update BigQuery with any state changes and the last end time
         state.last_time = unprocessed_plays[-1].endTime
@@ -145,12 +148,38 @@ class TwitterClient:
         )
         self.api = tweepy.API(auth)
 
-    def tweet(self, play: Play, state: State) -> None:
-        tweet_text = f"""{play.batter_name} has just hit a {play.event.lower()} at {play.endTime_pacific}!
+    def tweet(self, play: Play, state: State, matching_letters: list[str]) -> None:
+        if len(matching_letters) == 1:
+            alert = ""
+        else:
+            if len(matching_letters) == 2:
+                alert_name = "DOUBLE"
+            elif len(matching_letters) == 3:
+                alert_name = "TRIPLE"
+            elif len(matching_letters) == 4:
+                alert_name = "QUADRUPLE"
+            elif len(matching_letters) == 5:
+                alert_name = "QUINTUPLE"
+            elif len(matching_letters) == 6:
+                alert_name = "SEXTUPLE"
+            elif len(matching_letters) == 7:
+                alert_name = "SEPTUPLE"
+            elif len(matching_letters) == 8:
+                alert_name = "OCTUPLE"
+            elif len(matching_letters) == 9:
+                alert_name = "NONUPLE"
+            elif len(matching_letters) == 10:
+                alert_name = "DECUPLE"
+            else:
+                alert_name = "MEGA"
+            alert = f"""🚨 {alert_name} LETTER 🚨
 
-His name has the letter {state.current_letter}, so the next letter in the MLB Alphabet Game is now {state.next_letter}!
+"""
+        tweet_text = f"""{alert}{play.batter_name} just hit a {play.event.lower()} at {play.endTime_pacific}!
 
-We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022."""
+His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}, so the next letter in the MLB Alphabet Game is now {state.current_letter}!
+
+We have cycled through the alphabet {state.times_cycled} times since this bot was created on 9/17."""
         print(tweet_text)
 
         if not DRY_RUN:
@@ -188,6 +217,16 @@ class BigQueryClient:
         print(q)
         if not DRY_RUN:
             self.client.query(q).result()
+
+
+def oxford_comma(listed: list[str]) -> str:
+    if len(listed) == 0:
+        return ""
+    if len(listed) == 1:
+        return listed[0]
+    if len(listed) == 2:
+        return listed[0] + " and " + listed[1]
+    return ", ".join(listed[:-1]) + ", and " + listed[-1]
 
 
 # Invoke the function is running locally. Google Cloud Function will run main() automatically.
