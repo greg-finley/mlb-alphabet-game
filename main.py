@@ -147,9 +147,9 @@ class TwitterClient:
 
     def tweet(self, play: Play, state: State) -> None:
         tweet_text = f"""{play.batter_name} has just hit a {play.event.lower()} at {play.endTime_pacific}!
-            
+
 His name has the letter {state.current_letter}, so the next letter in the MLB Alphabet Game is now {state.next_letter}!
-        
+
 We have cycled through the alphabet {state.times_cycled} times since this bot was created on Sept 17, 2022."""
         print(tweet_text)
 
