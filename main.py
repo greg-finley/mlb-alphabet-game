@@ -8,9 +8,9 @@ import os
 from dataclasses import dataclass
 
 import requests
-import tweepy
+import tweepy  # type: ignore
 from google.cloud import bigquery
-from PIL import Image
+from PIL import Image  # type: ignore
 from pytz import timezone, utc
 
 MLB_API_BASE_URL = "https://statsapi.mlb.com/api/v1"
@@ -166,7 +166,7 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
 
 
 class BigQueryClient:
-    def __init__(self):
+    def __init__(self) -> None:
         self.client = bigquery.Client()
 
     def get_initial_state(self) -> State:
@@ -176,6 +176,7 @@ class BigQueryClient:
         # Will only have one row
         for row in rows:
             return State(*row)
+        raise Exception("No state found")
 
     def update_state(self, state: State) -> None:
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, last_time = '{state.last_time}' WHERE 1=1;"

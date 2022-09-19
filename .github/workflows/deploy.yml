@@ -1,11 +1,24 @@
 name: deploy
 on:
   push:
-    branches: 
-     - 'main'
 jobs:
+  mypy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.9.12
+    - uses: snok/install-poetry@v1
+    - id: 'install'
+      run: poetry install --no-interaction --no-root
+    - id: 'mypy'
+      run: poetry run mypy main.py
+
   deploy:
     runs-on: ubuntu-latest
+    needs: mypy
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: 'read'
       id-token: 'write'
