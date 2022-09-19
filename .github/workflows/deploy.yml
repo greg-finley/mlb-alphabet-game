@@ -1,0 +1,32 @@
+name: deploy
+on:
+  push:
+    branches: 
+     - 'main'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.gcp_credentials }}'
+
+    - id: 'deploy'
+      uses: 'google-github-actions/deploy-cloud-functions@v0'
+      with:
+        name: 'projects/greg-finley/locations/us-central1/functions/mlb-alphabet-game'
+        runtime: 'python310'
+        entry_point: 'main'
+        memory_mb: 256
+        secret_environment_variables: 'MLB_TWITTER_ACCESS_SECRET=projects/greg-finley/secrets/MLB_TWITTER_ACCESS_SECRET/latest,MLB_TWITTER_ACCESS_TOKEN=projects/greg-finley/secrets/MLB_TWITTER_ACCESS_TOKEN/latest, MLB_TWITTER_CONSUMER_KEY=projects/greg-finley/secrets/MLB_TWITTER_CONSUMER_KEY/latest, MLB_TWITTER_CONSUMER_SECRET=projects/greg-finley/secrets/MLB_TWITTER_CONSUMER_SECRET/latest'
+        timeout: 240
+        min_instances: 0
+        max_instances: 1
+
