@@ -237,6 +237,7 @@ class BigQueryClient:
         query = """
             SELECT game_id
             FROM mlb_alphabet_game.completed_games
+            order by completed_at desc limit 100
         """
         query_job = self.client.query(query)
         results = query_job.result()
