@@ -52,6 +52,7 @@ class ImageInput:
     player_id: int  # 453568
     hit_type: str  # Home Run
     matching_letters: list[str]  # ['L', 'M', 'N', 'O']
+    alert: str  # '' | '🚨 TRIPLE LETTER 🚨'
 
 
 @dataclass
@@ -218,6 +219,7 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
                         player_id=play.batter_id,
                         hit_type=hit_type,
                         matching_letters=matching_letters,
+                        alert=alert,
                     )
                 ),
             )
@@ -270,11 +272,13 @@ class BigQueryClient:
 
 
 class ImageAPI:
-    def get_tweet_image(self, image_input: ImageInput) -> io.BytesIO:
+    def get_tweet_image(
+        self, image_input: ImageInput, save_locally=False
+    ) -> io.BytesIO:
         font = ImageFont.truetype("fonts/arial.ttf", 25)
         small_font = ImageFont.truetype("fonts/arial.ttf", 15)
 
-        background = Image.new("RGB", (1000, 320), (255, 255, 255))
+        background = Image.new("RGB", (1000, 300), (255, 255, 255))
 
         # Get a player picture by ID
         data = requests.get(
@@ -291,7 +295,14 @@ class ImageAPI:
         # Write the hit type underneath that
         draw.text((230, 25), image_input.hit_type, (0, 0, 0), font=font)
         # At the bottom right corner, write @MLBAlphabetGame
-        draw.text((850, 300), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
+        draw.text((850, 275), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
+        if image_input.alert:
+            draw.text(
+                (230, 265),
+                image_input.alert.replace("🚨 ", "").replace("🚨", ""),
+                (0, 0, 0),
+                font=font,
+            )
 
         # Write the matching letters
         for i, l in enumerate(image_input.matching_letters):
@@ -303,6 +314,8 @@ class ImageAPI:
 
         b = io.BytesIO()
         background.save(b, format="PNG")
+        if save_locally:
+            background.save("test.png")
         b.seek(0)
         return b
 
@@ -317,6 +330,6 @@ def oxford_comma(listed: list[str]) -> str:
     return ", ".join(listed[:-1]) + ", and " + listed[-1]
 
 
-# Invoke the function is running locally. Google Cloud Function will run main() automatically.
-if LOCAL:
+# Invoke the function if running locally. Google Cloud Function will run main() automatically.
+if LOCAL and __name__ == "__main__":
     main({}, {})
