@@ -11,7 +11,7 @@ import requests
 import tweepy  # type: ignore
 from dotenv import load_dotenv
 from google.cloud import bigquery
-from PIL import Image  # type: ignore
+from PIL import Image, ImageDraw, ImageFont  # type: ignore
 from pytz import timezone, utc
 
 load_dotenv()
@@ -44,6 +44,14 @@ class Play:
     endTime: str
     batter_name: str
     batter_id: int
+
+
+@dataclass
+class ImageInput:
+    player_name: str  # Charlie Blackmon
+    player_id: int  # 453568
+    hit_type: str  # Home Run
+    matching_letters: list[str]  # ['L', 'M', 'N', 'O']
 
 
 @dataclass
@@ -165,6 +173,7 @@ class TwitterClient:
         self.api = tweepy.API(auth)
 
     def tweet(self, play: Play, state: State, matching_letters: list[str]) -> None:
+        hit_type = play.event
         if len(matching_letters) == 1:
             alert = ""
         else:
@@ -191,7 +200,7 @@ class TwitterClient:
             alert = f"""🚨 {alert_name} LETTER 🚨
 
 """
-        tweet_text = f"""{alert}{play.batter_name} just hit a {play.event.lower()}!
+        tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}!
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}, so the next letter in the MLB Alphabet Game is now {state.current_letter}.
 
@@ -199,16 +208,19 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
         print(tweet_text)
 
         if not DRY_RUN:
-            # Get the batter's headshot
-            data = requests.get(
-                f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{play.batter_id}/headshot/67/current"
-            ).content
-            img = Image.open(io.BytesIO(data))
-            b = io.BytesIO()
-            img.save(b, format="PNG")
-            b.seek(0)
+            image_api = ImageAPI()
 
-            media = self.api.media_upload(filename="dummy_string", file=b)
+            media = self.api.media_upload(
+                filename="dummy_string",
+                file=image_api.get_tweet_image(
+                    ImageInput(
+                        player_name=play.batter_name,
+                        player_id=play.batter_id,
+                        hit_type=hit_type,
+                        matching_letters=matching_letters,
+                    )
+                ),
+            )
             self.api.update_status(
                 status=tweet_text,
                 media_ids=[media.media_id],
@@ -255,6 +267,44 @@ class BigQueryClient:
         print(q)
         if not DRY_RUN:
             self.client.query(q).result()
+
+
+class ImageAPI:
+    def get_tweet_image(self, image_input: ImageInput) -> io.BytesIO:
+        font = ImageFont.truetype("fonts/arial.ttf", 25)
+        small_font = ImageFont.truetype("fonts/arial.ttf", 15)
+
+        background = Image.new("RGB", (1000, 320), (255, 255, 255))
+
+        # Get a player picture by ID
+        data = requests.get(
+            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_200,q_auto:best/v1/people/{image_input.player_id}/headshot/67/current"
+        ).content
+        player_img = Image.open(io.BytesIO(data))
+
+        # Add player img to background in the top left corner
+        background.paste(player_img, (0, 0))
+
+        # Write the player name at 230 pixels to the right of the top left corner
+        draw = ImageDraw.Draw(background)
+        draw.text((230, 0), image_input.player_name, (0, 0, 0), font=font)
+        # Write the hit type underneath that
+        draw.text((230, 25), image_input.hit_type, (0, 0, 0), font=font)
+        # At the bottom right corner, write @MLBAlphabetGame
+        draw.text((850, 300), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
+
+        # Write the matching letters
+        for i, l in enumerate(image_input.matching_letters):
+            letter_img = Image.open(f"letters/{l.lower()}.png").convert("RGBA")
+            letter_img = letter_img.resize(
+                (int(letter_img.width / 2), int(letter_img.height / 2))
+            )
+            background.paste(letter_img, (230 + (i * 125), 120), letter_img)
+
+        b = io.BytesIO()
+        background.save(b, format="PNG")
+        b.seek(0)
+        return b
 
 
 def oxford_comma(listed: list[str]) -> str:
