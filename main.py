@@ -66,6 +66,7 @@ def main(event, context):
     if not games:
         print("No incomplete games")
         return
+    print(f"Found {len(games)} active games")
 
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
