@@ -237,7 +237,6 @@ class BigQueryClient:
         query = """
             SELECT game_id
             FROM mlb_alphabet_game.completed_games
-            WHERE completed_at > TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 4 DAY)
         """
         query_job = self.client.query(query)
         results = query_job.result()
