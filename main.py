@@ -303,7 +303,7 @@ class ImageAPI:
             draw.text(
                 (700, 930),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
-                (0, 0, 0),
+                fill=(255, 0, 0) if "🚨" in image_input.alert else (0, 0, 0),
                 font=font,
             )
 
