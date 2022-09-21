@@ -20,5 +20,7 @@ for item in [
     )
 
     image_api.get_tweet_image(
-        image_input=image_input, mlb_client=mlb_client, local_save_name=item[2]
+        image_input=image_input,
+        mlb_client=mlb_client,
+        local_save_name=f".test_images/{item[2]}",
     )
