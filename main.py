@@ -304,13 +304,49 @@ class ImageAPI:
                 font=font,
             )
 
+        if len(image_input.matching_letters) >= 5:
+            scaling_factor = 0.75
+            spacing = 160
+            extra_vertical_space = 0
+            extra_horizontal_space = 0
+        elif len(image_input.matching_letters) == 4:
+            scaling_factor = 0.85
+            spacing = 200
+            extra_vertical_space = 0
+            extra_horizontal_space = 0
+        elif len(image_input.matching_letters) == 3:
+            scaling_factor = 1.3
+            spacing = 270
+            extra_vertical_space = 0
+            extra_horizontal_space = 0
+        elif len(image_input.matching_letters) == 2:
+            scaling_factor = 1.9
+            spacing = 380
+            extra_vertical_space = 0
+            extra_horizontal_space = 0
+        else:
+            scaling_factor = 2.5
+            spacing = 500
+            extra_vertical_space = 100
+            extra_horizontal_space = 150
+
         # Write the matching letters
         for i, l in enumerate(image_input.matching_letters):
             letter_img = Image.open(f"letters/{l.lower()}.png").convert("RGBA")
             letter_img = letter_img.resize(
-                (int(letter_img.width * 0.75), int(letter_img.height * 0.75))
+                (
+                    int(letter_img.width * scaling_factor),
+                    int(letter_img.height * scaling_factor),
+                )
             )
-            background.paste(letter_img, (700, 120 + (i * 160)), letter_img)
+            background.paste(
+                letter_img,
+                (
+                    700 + extra_horizontal_space,
+                    120 + extra_vertical_space + (i * spacing),
+                ),
+                letter_img,
+            )
 
         b = io.BytesIO()
         background.save(b, format="PNG")
