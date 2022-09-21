@@ -178,10 +178,13 @@ class TwitterClient:
         if len(matching_letters) == 1:
             alert = ""
         else:
+            siren = "🚨"
             if len(matching_letters) == 2:
                 alert_name = "DOUBLE"
+                siren = ""
             elif len(matching_letters) == 3:
                 alert_name = "TRIPLE"
+                siren = ""
             elif len(matching_letters) == 4:
                 alert_name = "QUADRUPLE"
             elif len(matching_letters) == 5:
@@ -198,7 +201,7 @@ class TwitterClient:
                 alert_name = "DECUPLE"
             else:
                 alert_name = "MEGA"
-            alert = f"""🚨 {alert_name} LETTER 🚨
+            alert = f"""{siren + ' ' if siren else ''}{alert_name} LETTER{' ' + siren if siren else ''}
 
 """
         tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}!
