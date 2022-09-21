@@ -275,14 +275,14 @@ class ImageAPI:
     def get_tweet_image(
         self, image_input: ImageInput, save_locally=False
     ) -> io.BytesIO:
-        font = ImageFont.truetype("fonts/arial.ttf", 25)
-        small_font = ImageFont.truetype("fonts/arial.ttf", 15)
+        font = ImageFont.truetype("fonts/arial.ttf", 50)
+        small_font = ImageFont.truetype("fonts/arial.ttf", 25)
 
-        background = Image.new("RGB", (1000, 300), (255, 255, 255))
+        background = Image.new("RGB", (1500, 1000), (255, 255, 255))
 
         # Get a player picture by ID
         data = requests.get(
-            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_200,q_auto:best/v1/people/{image_input.player_id}/headshot/67/current"
+            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_1000,q_auto:best/v1/people/{image_input.player_id}/headshot/67/current"
         ).content
         player_img = Image.open(io.BytesIO(data))
 
@@ -291,14 +291,14 @@ class ImageAPI:
 
         # Write the player name at 230 pixels to the right of the top left corner
         draw = ImageDraw.Draw(background)
-        draw.text((230, 0), image_input.player_name, (0, 0, 0), font=font)
+        draw.text((700, 0), image_input.player_name, (0, 0, 0), font=font)
         # Write the hit type underneath that
-        draw.text((230, 25), image_input.hit_type, (0, 0, 0), font=font)
+        draw.text((700, 50), image_input.hit_type, (0, 0, 0), font=font)
         # At the bottom right corner, write @MLBAlphabetGame
-        draw.text((850, 275), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
+        draw.text((1225, 950), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
         if image_input.alert:
             draw.text(
-                (230, 265),
+                (700, 930),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
                 (0, 0, 0),
                 font=font,
@@ -308,9 +308,9 @@ class ImageAPI:
         for i, l in enumerate(image_input.matching_letters):
             letter_img = Image.open(f"letters/{l.lower()}.png").convert("RGBA")
             letter_img = letter_img.resize(
-                (int(letter_img.width / 2), int(letter_img.height / 2))
+                (int(letter_img.width * 0.75), int(letter_img.height * 0.75))
             )
-            background.paste(letter_img, (230 + (i * 125), 120), letter_img)
+            background.paste(letter_img, (700, 120 + (i * 160)), letter_img)
 
         b = io.BytesIO()
         background.save(b, format="PNG")
