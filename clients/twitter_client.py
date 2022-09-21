@@ -4,7 +4,6 @@ import os
 
 import tweepy  # type: ignore
 from my_types import ImageInput, Play, State
-from utils import oxford_comma
 
 from clients.image_client import ImageClient
 from clients.mlb_client import MLBClient
@@ -30,7 +29,7 @@ class TwitterClient:
 
         tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}! {self.mlb_client.get_team_twitter_hashtag(play.batter_team_id)}
 
-His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}. The next letter in the MLB Alphabet Game is now {state.current_letter}.
+His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the MLB Alphabet Game is now {state.current_letter}.
 
 We have cycled through the alphabet {state.times_cycled} times since this bot was created on 9/17."""
         print(tweet_text)
@@ -86,3 +85,12 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
             return f"""{siren + ' ' if siren else ''}{alert_name} LETTER{' ' + siren if siren else ''}
 
 """
+
+    def _oxford_comma(self, listed: list[str]) -> str:
+        if len(listed) == 0:
+            return ""
+        if len(listed) == 1:
+            return listed[0]
+        if len(listed) == 2:
+            return listed[0] + " and " + listed[1]
+        return ", ".join(listed[:-1]) + ", and " + listed[-1]

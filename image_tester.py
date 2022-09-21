@@ -6,7 +6,7 @@ image_client = ImageClient()
 mlb_client = MLBClient(dry_run=True)
 
 for item in [
-    (["K", "", "one.png"]),
+    (["K"], "", "one.png"),
     (["K", "L"], "DOUBLE LETTER", "two.png"),
     (["K", "L", "M"], "TRIPLE LETTER", "three.png"),
     (["K", "L", "M", "N"], "🚨 QUADRUPLE LETTER 🚨", "four.png"),
