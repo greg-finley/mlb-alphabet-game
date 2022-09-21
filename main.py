@@ -180,35 +180,8 @@ class TwitterClient:
 
     def tweet(self, play: Play, state: State, matching_letters: list[str]) -> None:
         hit_type = play.event
-        if len(matching_letters) == 1:
-            alert = ""
-        else:
-            siren = "🚨"
-            if len(matching_letters) == 2:
-                alert_name = "DOUBLE"
-                siren = ""
-            elif len(matching_letters) == 3:
-                alert_name = "TRIPLE"
-                siren = ""
-            elif len(matching_letters) == 4:
-                alert_name = "QUADRUPLE"
-            elif len(matching_letters) == 5:
-                alert_name = "QUINTUPLE"
-            elif len(matching_letters) == 6:
-                alert_name = "SEXTUPLE"
-            elif len(matching_letters) == 7:
-                alert_name = "SEPTUPLE"
-            elif len(matching_letters) == 8:
-                alert_name = "OCTUPLE"
-            elif len(matching_letters) == 9:
-                alert_name = "NONUPLE"
-            elif len(matching_letters) == 10:
-                alert_name = "DECUPLE"
-            else:
-                alert_name = "MEGA"
-            alert = f"""{siren + ' ' if siren else ''}{alert_name} LETTER{' ' + siren if siren else ''}
+        alert = self._alert(matching_letters)
 
-"""
         tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}!
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}, so the next letter in the MLB Alphabet Game is now {state.current_letter}.
@@ -235,6 +208,37 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
                 status=tweet_text,
                 media_ids=[media.media_id],
             )
+
+    def _alert(self, matching_letters: list[str]) -> str:
+        if len(matching_letters) == 1:
+            return ""
+        else:
+            siren = "🚨"
+            if len(matching_letters) == 2:
+                alert_name = "DOUBLE"
+                siren = ""
+            elif len(matching_letters) == 3:
+                alert_name = "TRIPLE"
+                siren = ""
+            elif len(matching_letters) == 4:
+                alert_name = "QUADRUPLE"
+            elif len(matching_letters) == 5:
+                alert_name = "QUINTUPLE"
+            elif len(matching_letters) == 6:
+                alert_name = "SEXTUPLE"
+            elif len(matching_letters) == 7:
+                alert_name = "SEPTUPLE"
+            elif len(matching_letters) == 8:
+                alert_name = "OCTUPLE"
+            elif len(matching_letters) == 9:
+                alert_name = "NONUPLE"
+            elif len(matching_letters) == 10:
+                alert_name = "DECUPLE"
+            else:
+                alert_name = "MEGA"
+            return f"""{siren + ' ' if siren else ''}{alert_name} LETTER{' ' + siren if siren else ''}
+
+"""
 
 
 class BigQueryClient:
