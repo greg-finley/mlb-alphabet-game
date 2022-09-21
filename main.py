@@ -20,6 +20,39 @@ MLB_API_BASE_URL = "https://statsapi.mlb.com/api/v1"
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 LOCAL = os.environ.get("LOCAL", "false").lower() == "true"
 
+TEAM_ID_TO_HASHTAG = {
+    108: "#GoHalos",
+    109: "#Dbacks",
+    110: "#Birdland",
+    111: "#DirtyWater",
+    112: "#ItsDifferentHere",
+    113: "#ATOBTTR",
+    114: "#ForTheLand",
+    115: "#Rockies",
+    116: "#DetroitRoots",
+    117: "#LevelUp",
+    118: "#TogetherRoyal",
+    119: "#AlwaysLA",
+    120: "#NATITUDE",
+    121: "#LGM",
+    133: "#DrumTogether",
+    134: "#LetsGoBucs",
+    135: "#TimeToShine",
+    136: "#SeaUsRise",
+    137: "#SFGameUp",
+    138: "#STLCards",
+    139: "#RaysUp",
+    140: "#StraightUpTX",
+    141: "#NextLevel",
+    142: "#MNTwins",
+    143: "#RingTheBell",
+    144: "#ForTheA",
+    145: "#ChangeTheGame",
+    146: "#MakeItMiami",
+    147: "#RepBX",
+    158: "#ThisIsMyCrew",
+}
+
 
 @dataclass
 class State:
@@ -43,6 +76,7 @@ class Play:
     endTime: str
     batter_name: str
     batter_id: int
+    batter_team_id: int
 
 
 @dataclass
@@ -58,6 +92,8 @@ class ImageInput:
 class Game:
     game_id: int
     is_complete: bool
+    home_team_id: int
+    away_team_id: int
 
 
 def main(event, context):
@@ -128,6 +164,8 @@ class MLBClient:
                         Game(
                             game_id=game_id,
                             is_complete=abstract_game_state == "Final",
+                            home_team_id=g["teams"]["home"]["team"]["id"],
+                            away_team_id=g["teams"]["away"]["team"]["id"],
                         )
                     )
         return games
@@ -151,6 +189,9 @@ class MLBClient:
                         endTime=p["about"]["endTime"],
                         batter_name=p["matchup"]["batter"]["fullName"],
                         batter_id=p["matchup"]["batter"]["id"],
+                        batter_team_id=g.away_team_id
+                        if p["about"]["isTopInning"]
+                        else g.home_team_id,
                     )
                     plays.append(play)
 
@@ -182,9 +223,9 @@ class TwitterClient:
         hit_type = play.event
         alert = self._alert(matching_letters)
 
-        tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}!
+        tweet_text = f"""{alert}{play.batter_name} just hit a {hit_type.lower()}! {TEAM_ID_TO_HASHTAG[play.batter_team_id]}
 
-His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}, so the next letter in the MLB Alphabet Game is now {state.current_letter}.
+His name has the letter{'' if len(matching_letters) == 1 else 's'} {oxford_comma(matching_letters)}. The next letter in the MLB Alphabet Game is now {state.current_letter}.
 
 We have cycled through the alphabet {state.times_cycled} times since this bot was created on 9/17."""
         print(tweet_text)
