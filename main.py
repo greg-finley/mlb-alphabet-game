@@ -64,7 +64,7 @@ class Game:
 def main(event, context):
     mlb_client = MLBClient()
     bigquery_client = BigQueryClient()
-    twitter_client = TwitterClient()
+    twitter_client = TwitterClient(mlb_client)
 
     # Get games we have already completely process so we don't poll them again
     completed_games = bigquery_client.get_recently_completed_games()
@@ -167,7 +167,7 @@ class MLBClient:
 
 
 class TwitterClient:
-    def __init__(self):
+    def __init__(self, mlb_client: MLBClient):
         auth = tweepy.OAuthHandler(
             os.environ["MLB_TWITTER_CONSUMER_KEY"],
             os.environ["MLB_TWITTER_CONSUMER_SECRET"],
@@ -177,6 +177,7 @@ class TwitterClient:
             os.environ["MLB_TWITTER_ACCESS_SECRET"],
         )
         self.api = tweepy.API(auth)
+        self.mlb_client = mlb_client
 
     def tweet(self, play: Play, state: State, matching_letters: list[str]) -> None:
         hit_type = play.event
@@ -201,7 +202,8 @@ We have cycled through the alphabet {state.times_cycled} times since this bot wa
                         hit_type=hit_type,
                         matching_letters=matching_letters,
                         alert=alert,
-                    )
+                    ),
+                    mlb_client=self.mlb_client,
                 ),
             )
             self.api.update_status(
