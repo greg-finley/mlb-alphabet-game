@@ -12,7 +12,6 @@ import tweepy  # type: ignore
 from dotenv import load_dotenv
 from google.cloud import bigquery
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
-from pytz import timezone, utc
 
 load_dotenv()
 
