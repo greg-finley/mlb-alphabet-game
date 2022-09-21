@@ -1,7 +1,9 @@
-from main import ImageAPI, ImageInput, MLBClient
+from clients.image_client import ImageClient
+from clients.mlb_client import MLBClient
+from my_types import ImageInput
 
-image_api = ImageAPI()
-mlb_client = MLBClient()
+image_client = ImageClient()
+mlb_client = MLBClient(dry_run=True)
 
 for item in [
     (["K", "", "one.png"]),
@@ -19,7 +21,7 @@ for item in [
         alert=item[1],
     )
 
-    image_api.get_tweet_image(
+    image_client.get_tweet_image(
         image_input=image_input,
         mlb_client=mlb_client,
         local_save_name=f".test_images/{item[2]}",
