@@ -6,7 +6,7 @@ image_input = ImageInput(
     player_name="Charlie Blackmon",
     player_id=453568,
     hit_type="Home Run",
-    matching_letters=["L", "M", "N", "O", "P"],
+    matching_letters=["K", "L", "M", "N", "O"],
     alert="🚨 QUINTUPLE LETTER 🚨",
 )
 
