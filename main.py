@@ -331,49 +331,103 @@ class ImageAPI:
                 font=font,
             )
 
-        if len(image_input.matching_letters) >= 5:
-            scaling_factor = 0.75
-            spacing = 160
-            extra_vertical_space = 0
-            extra_horizontal_space = 0
-        elif len(image_input.matching_letters) == 4:
-            scaling_factor = 0.85
-            spacing = 200
-            extra_vertical_space = 0
-            extra_horizontal_space = 0
-        elif len(image_input.matching_letters) == 3:
-            scaling_factor = 1.3
-            spacing = 270
-            extra_vertical_space = 0
-            extra_horizontal_space = 0
-        elif len(image_input.matching_letters) == 2:
-            scaling_factor = 1.9
-            spacing = 380
-            extra_vertical_space = 0
-            extra_horizontal_space = 0
-        else:
-            scaling_factor = 2.5
-            spacing = 500
-            extra_vertical_space = 100
-            extra_horizontal_space = 150
-
-        # Write the matching letters
-        for i, l in enumerate(image_input.matching_letters):
-            letter_img = Image.open(f"letters/{l.lower()}.png").convert("RGBA")
-            letter_img = letter_img.resize(
-                (
-                    int(letter_img.width * scaling_factor),
-                    int(letter_img.height * scaling_factor),
+        LETTERS_TOP = 2 * (TEXT_SIZE + 10)
+        LETTERS_BOTTOM = HEIGHT - TEXT_SIZE - 20
+        LETTERS_LEFT = PLAYER_IMAGE_WIDTH + 10
+        LETTERS_RIGHT = WIDTH - 10
+        # draw.rectangle(
+        #     (LETTERS_LEFT, LETTERS_TOP, LETTERS_RIGHT, LETTERS_BOTTOM),
+        #     outline=(0, 0, 0),
+        #     width=1,
+        # )
+        for i, letter in enumerate(image_input.matching_letters):
+            letter_img = Image.open(f"letters/{letter.lower()}.png").convert("RGBA")
+            if len(image_input.matching_letters) == 1:
+                # Resize letter_img to be twice as big
+                letter_img = letter_img.resize(
+                    (letter_img.width * 2, letter_img.height * 2)
                 )
-            )
-            background.paste(
-                letter_img,
-                (
-                    700 + extra_horizontal_space,
-                    120 + extra_vertical_space + (i * spacing),
-                ),
-                letter_img,
-            )
+                background.paste(
+                    letter_img,
+                    (
+                        int((LETTERS_LEFT + LETTERS_RIGHT) / 2 - letter_img.width / 2),
+                        int((LETTERS_TOP + LETTERS_BOTTOM) / 2 - letter_img.height / 2),
+                    ),
+                    letter_img,
+                )
+            elif len(image_input.matching_letters) == 2:
+                letter_img = letter_img.resize(
+                    (int(letter_img.width * 1.5), int(letter_img.height * 1.5))
+                )
+                blank_segments = 3
+                blank_segment_length = int(
+                    (LETTERS_RIGHT - LETTERS_LEFT - (2 * letter_img.width))
+                    / blank_segments
+                )
+                background.paste(
+                    letter_img,
+                    (
+                        LETTERS_LEFT
+                        + int(i * (letter_img.width + blank_segment_length))
+                        + blank_segment_length,
+                        int((LETTERS_TOP + LETTERS_BOTTOM) / 2 - letter_img.height / 2),
+                    ),
+                    letter_img,
+                )
+            elif len(image_input.matching_letters) in [3, 4]:
+                letter_img = letter_img.resize(
+                    (int(letter_img.width * 1.5), int(letter_img.height * 1.5))
+                )
+                blank_segments = 3
+                blank_segment_length = int(
+                    (LETTERS_RIGHT - LETTERS_LEFT - (2 * letter_img.width))
+                    / blank_segments
+                )
+                blank_vertical_segments = 3
+                blank_vertical_segment_length = int(
+                    (LETTERS_BOTTOM - LETTERS_TOP - (2 * letter_img.height))
+                    / blank_vertical_segments
+                )
+                background.paste(
+                    letter_img,
+                    (
+                        LETTERS_LEFT
+                        + int(i % 2 * (letter_img.width + blank_segment_length))
+                        + blank_segment_length,
+                        LETTERS_TOP
+                        + int(
+                            i // 2 * (letter_img.height + blank_vertical_segment_length)
+                        )
+                        + blank_vertical_segment_length,
+                    ),
+                    letter_img,
+                )
+            else:
+                # For 5-6 letters, put three in the first row and the rest in the second row
+                blank_segments = 4
+                blank_segment_length = int(
+                    (LETTERS_RIGHT - LETTERS_LEFT - (3 * letter_img.width))
+                    / blank_segments
+                )
+                blank_vertical_segments = 3
+                blank_vertical_segment_length = int(
+                    (LETTERS_BOTTOM - LETTERS_TOP - (2 * letter_img.height))
+                    / blank_vertical_segments
+                )
+                background.paste(
+                    letter_img,
+                    (
+                        LETTERS_LEFT
+                        + int(i % 3 * (letter_img.width + blank_segment_length))
+                        + blank_segment_length,
+                        LETTERS_TOP
+                        + int(
+                            i // 3 * (letter_img.height + blank_vertical_segment_length)
+                        )
+                        + blank_vertical_segment_length,
+                    ),
+                    letter_img,
+                )
 
         b = io.BytesIO()
         background.save(b, format="PNG")
