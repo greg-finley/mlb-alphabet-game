@@ -160,6 +160,11 @@ class MLBClient:
         print(f"Found {len(plays)} new plays")
         return plays
 
+    def get_player_picture(self, player_id: int) -> bytes:
+        return requests.get(
+            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_1000,q_auto:best/v1/people/{player_id}/headshot/67/current"
+        ).content
+
 
 class TwitterClient:
     def __init__(self):
@@ -276,32 +281,45 @@ class BigQueryClient:
 
 class ImageAPI:
     def get_tweet_image(
-        self, image_input: ImageInput, save_locally=False
+        self, image_input: ImageInput, mlb_client: MLBClient, save_locally=False
     ) -> io.BytesIO:
-        font = ImageFont.truetype("fonts/arial.ttf", 50)
-        small_font = ImageFont.truetype("fonts/arial.ttf", 25)
+        SMALL_TEXT_SIZE = 25
+        TEXT_SIZE = 50
+        WIDTH = 1500
+        HEIGHT = 1000
 
-        background = Image.new("RGB", (1500, 1000), (255, 255, 255))
+        font = ImageFont.truetype("fonts/arial.ttf", TEXT_SIZE)
+        small_font = ImageFont.truetype("fonts/arial.ttf", SMALL_TEXT_SIZE)
 
-        # Get a player picture by ID
-        data = requests.get(
-            f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_1000,q_auto:best/v1/people/{image_input.player_id}/headshot/67/current"
-        ).content
-        player_img = Image.open(io.BytesIO(data))
+        background = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
+
+        player_img = Image.open(
+            io.BytesIO(mlb_client.get_player_picture(image_input.player_id))
+        )
+        PLAYER_IMAGE_WIDTH = player_img.width
 
         # Add player img to background in the top left corner
         background.paste(player_img, (0, 0))
 
         # Write the player name at 230 pixels to the right of the top left corner
         draw = ImageDraw.Draw(background)
-        draw.text((700, 0), image_input.player_name, (0, 0, 0), font=font)
+        draw.text(
+            (PLAYER_IMAGE_WIDTH + 10, 0), image_input.player_name, (0, 0, 0), font=font
+        )
         # Write the hit type underneath that
-        draw.text((700, 50), image_input.hit_type, (0, 0, 0), font=font)
+        draw.text(
+            (PLAYER_IMAGE_WIDTH + 10, TEXT_SIZE + 2),
+            image_input.hit_type,
+            (0, 0, 0),
+            font=font,
+        )
         # At the bottom right corner, write @MLBAlphabetGame
-        draw.text((1225, 950), "@MLBAlphabetGame", (0, 0, 0), font=small_font)
+        draw.text(
+            (WIDTH - 275, HEIGHT - 50), "@MLBAlphabetGame", (0, 0, 0), font=small_font
+        )
         if image_input.alert:
             draw.text(
-                (700, 930),
+                (PLAYER_IMAGE_WIDTH + 10, HEIGHT - 70),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
                 fill=(255, 0, 0) if "🚨" in image_input.alert else (0, 0, 0),
                 font=font,
