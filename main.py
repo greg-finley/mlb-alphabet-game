@@ -287,7 +287,10 @@ class BigQueryClient:
 
 class ImageAPI:
     def get_tweet_image(
-        self, image_input: ImageInput, mlb_client: MLBClient, save_locally=False
+        self,
+        image_input: ImageInput,
+        mlb_client: MLBClient,
+        local_save_name: str | None = None,
     ) -> io.BytesIO:
         SMALL_TEXT_SIZE = 25
         TEXT_SIZE = 50
@@ -431,8 +434,8 @@ class ImageAPI:
 
         b = io.BytesIO()
         background.save(b, format="PNG")
-        if save_locally:
-            background.save("test.png")
+        if local_save_name:
+            background.save(local_save_name)
         b.seek(0)
         return b
 
