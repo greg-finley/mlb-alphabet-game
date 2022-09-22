@@ -18,7 +18,6 @@ LOCAL = os.environ.get("LOCAL", "false").lower() == "true"
 def main(event, context):
     mlb_client = MLBClient(dry_run=DRY_RUN)
     bigquery_client = BigQueryClient(dry_run=DRY_RUN)
-    twitter_client = TwitterClient(mlb_client, dry_run=DRY_RUN)
 
     # Get games we have already completely process so we don't poll them again
     completed_games = bigquery_client.get_recently_completed_games()
@@ -30,7 +29,7 @@ def main(event, context):
         print("No incomplete games")
         return
     print(f"Found {len(games)} active games")
-
+    
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
     print(state)
@@ -51,6 +50,7 @@ def main(event, context):
                     state.times_cycled += 1
 
             # Tweet it
+            twitter_client = TwitterClient(mlb_client, dry_run=DRY_RUN)
             twitter_client.tweet(p, state, matching_letters)
 
     # At the end, update BigQuery with any state changes and the last end time
