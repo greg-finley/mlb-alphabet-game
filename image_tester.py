@@ -1,9 +1,11 @@
 from clients.image_client import ImageClient
 from clients.mlb_client import MLBClient
+from clients.nhl_client import NHLClient
 from my_types import ImageInput
 
 image_client = ImageClient()
 mlb_client = MLBClient(dry_run=True)
+nhl_client = NHLClient(dry_run=True)
 
 for item in [
     (["K"], "", "one.png"),
@@ -13,16 +15,17 @@ for item in [
     (["K", "L", "M", "N", "O"], "🚨 QUINTUPLE LETTER 🚨", "five.png"),
     (["K", "L", "M", "N", "O", "P"], "🚨 SEXTUPLE LETTER 🚨", "six.png"),
 ]:
-    image_input = ImageInput(
-        player_name="Charlie Blackmon",
-        player_id=453568,
-        hit_type="Home Run",
-        matching_letters=item[0],
-        alert=item[1],
-    )
+    for i, sports_client in enumerate([mlb_client, nhl_client]):
+        image_input = ImageInput(
+            player_name="Charlie Blackmon" if i == 0 else "Alex Ovechkin",
+            player_id=453568 if i == 0 else 8471214,
+            event_name="Home Run" if i == 0 else "Goal",
+            matching_letters=item[0],
+            alert=item[1],
+        )
 
-    image_client.get_tweet_image(
-        image_input=image_input,
-        mlb_client=mlb_client,
-        local_save_name=f".test_images/{item[2]}",
-    )
+        image_client.get_tweet_image(
+            image_input=image_input,
+            sports_client=sports_client,
+            local_save_name=f".test_images/{sports_client.league_code}{item[2]}",
+        )
