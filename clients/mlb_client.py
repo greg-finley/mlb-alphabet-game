@@ -1,17 +1,30 @@
 from __future__ import annotations
 
-import datetime
+import os
 
 import requests
-from my_types import Game, Play, State
+from my_types import Game, Play, State, TweetableEvent, TwitterCredentials
+
+from clients.abstract_sports_client import AbstractSportsClient
 
 
-class MLBClient:
+class MLBClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
         self.dry_run = dry_run
+
         self.base_url = "https://statsapi.mlb.com/api/v1"
 
-        self.team_to_hashtag = {
+    @property
+    def league_code(self) -> str:
+        return "MLB"
+
+    @property
+    def cycle_time_period(self) -> str:
+        return "since this bot was created on 9/17"
+
+    @property
+    def team_to_hashtag(self) -> dict:
+        return {
             108: "#GoHalos",
             109: "#Dbacks",
             110: "#Birdland",
@@ -44,35 +57,17 @@ class MLBClient:
             158: "#ThisIsMyCrew",
         }
 
-    def get_current_games(self, completed_games: list[int]) -> list[Game]:
-        # Fudge it by a day in either direction in case of timezone issues
-        today = datetime.date.today()
-        yesterday = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-        tomorrow = (today + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-
-        dates = requests.get(
-            self.base_url
-            + f"/schedule?sportId=1&startDate={yesterday}&endDate={tomorrow}"
-        ).json()["dates"]
-
-        games: list[Game] = []
-        for d in dates:
-            for g in d["games"]:
-                game_id = g["gamePk"]
-                abstract_game_state = g["status"]["abstractGameState"]
-                if abstract_game_state != "Preview" and game_id not in completed_games:
-                    games.append(
-                        Game(
-                            game_id=game_id,
-                            is_complete=abstract_game_state == "Final",
-                            home_team_id=g["teams"]["home"]["team"]["id"],
-                            away_team_id=g["teams"]["away"]["team"]["id"],
-                        )
-                    )
-        return games
+    @property
+    def twitter_credentials(self) -> TwitterCredentials:
+        return TwitterCredentials(
+            consumer_key=os.environ["MLB_TWITTER_CONSUMER_KEY"],
+            consumer_secret=os.environ["MLB_TWITTER_CONSUMER_SECRET"],
+            access_token=os.environ["MLB_TWITTER_ACCESS_TOKEN"],
+            access_token_secret=os.environ["MLB_TWITTER_ACCESS_SECRET"],
+        )
 
     def get_unprocessed_plays(self, games: list[Game], state: State) -> list[Play]:
-        """Get the plays that we haven't processed yet and sort them by endTime."""
+        """Get the plays that we haven't processed yet and sort them by end_time."""
         plays: list[Play] = []
 
         for g in games:
@@ -83,21 +78,34 @@ class MLBClient:
                 if p["about"]["isComplete"] and (
                     self.dry_run or p["about"]["endTime"] > state.last_time
                 ):
+                    hit_name = (
+                        p["result"]["eventType"]
+                        if p["result"]["eventType"]
+                        in ["single", "double", "triple", "home_run"]
+                        else None
+                    )
+                    event = (
+                        TweetableEvent(
+                            name=hit_name,
+                            phrase=f"hit a {hit_name}",
+                            player_name=p["matchup"]["batter"]["fullName"],
+                            player_id=p["matchup"]["batter"]["id"],
+                            player_team_id=g.away_team_id
+                            if p["about"]["isTopInning"]
+                            else g.home_team_id,
+                        )
+                        if hit_name
+                        else None
+                    )
                     play = Play(
-                        event=p["result"]["event"],
-                        is_hit=p["result"]["eventType"]
-                        in ["single", "double", "triple", "home_run"],
-                        endTime=p["about"]["endTime"],
-                        batter_name=p["matchup"]["batter"]["fullName"],
-                        batter_id=p["matchup"]["batter"]["id"],
-                        batter_team_id=g.away_team_id
-                        if p["about"]["isTopInning"]
-                        else g.home_team_id,
+                        event=event,
+                        end_time=p["about"]["endTime"],
+                        tiebreaker=0,  # Cannot get two hits in one play in baseball
                     )
                     plays.append(play)
 
-        # Sort plays by endTime
-        plays.sort(key=lambda x: x.endTime)
+        # Sort plays by end_time
+        plays.sort(key=lambda p: p.end_time)
         print(f"Found {len(plays)} new plays")
         return plays
 
@@ -105,6 +113,3 @@ class MLBClient:
         return requests.get(
             f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_1000,q_auto:best/v1/people/{player_id}/headshot/67/current"
         ).content
-
-    def get_team_twitter_hashtag(self, team_id: int) -> str:
-        return self.team_to_hashtag[team_id]

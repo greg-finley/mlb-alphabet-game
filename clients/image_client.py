@@ -5,14 +5,14 @@ import io
 from my_types import ImageInput
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
 
-from clients.mlb_client import MLBClient
+from clients.abstract_sports_client import AbstractSportsClient
 
 
 class ImageClient:
     def get_tweet_image(
         self,
         image_input: ImageInput,
-        mlb_client: MLBClient,
+        sports_client: AbstractSportsClient,
         local_save_name: str | None = None,
     ) -> io.BytesIO:
         SMALL_TEXT_SIZE = 25
@@ -26,8 +26,23 @@ class ImageClient:
         background = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
 
         player_img = Image.open(
-            io.BytesIO(mlb_client.get_player_picture(image_input.player_id))
+            io.BytesIO(sports_client.get_player_picture(image_input.player_id))
         )
+        if sports_client.league_code == "NHL":
+            # Resize to 1000 pixels tall
+            player_img = player_img.resize(
+                (int(player_img.width * (HEIGHT / player_img.height)), HEIGHT)
+            )
+            # Keep the middle 666 pixels wide
+            player_img = player_img.crop(
+                (
+                    167,
+                    0,
+                    1000 - 167,
+                    HEIGHT,
+                )
+            )
+
         PLAYER_IMAGE_WIDTH = player_img.width
 
         # Add player img to background in the top left corner
@@ -41,13 +56,16 @@ class ImageClient:
         # Write the hit type underneath that
         draw.text(
             (PLAYER_IMAGE_WIDTH + 10, TEXT_SIZE + 2),
-            image_input.hit_type,
+            image_input.event_name,
             (0, 0, 0),
             font=font,
         )
-        # At the bottom right corner, write @MLBAlphabetGame
+        # At the bottom right corner, write the Twitter handle
         draw.text(
-            (WIDTH - 275, HEIGHT - 50), "@MLBAlphabetGame", (0, 0, 0), font=small_font
+            (WIDTH - 275, HEIGHT - 50),
+            f"@{sports_client.league_code}AlphabetGame",
+            (0, 0, 0),
+            font=small_font,
         )
         if image_input.alert:
             draw.text(
