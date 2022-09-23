@@ -79,7 +79,7 @@ class MLBClient(AbstractSportsClient):
                     self.dry_run or p["about"]["endTime"] > state.last_time
                 ):
                     hit_name = (
-                        p["result"]["eventType"]
+                        p["result"]["event"]
                         if p["result"]["eventType"]
                         in ["single", "double", "triple", "home_run"]
                         else None
@@ -87,7 +87,7 @@ class MLBClient(AbstractSportsClient):
                     event = (
                         TweetableEvent(
                             name=hit_name,
-                            phrase=f"hit a {hit_name}",
+                            phrase=f"hit a {hit_name.lower()}",
                             player_name=p["matchup"]["batter"]["fullName"],
                             player_id=p["matchup"]["batter"]["id"],
                             player_team_id=g.away_team_id
