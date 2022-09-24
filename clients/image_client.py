@@ -15,13 +15,15 @@ class ImageClient:
         sports_client: AbstractSportsClient,
         local_save_name: str | None = None,
     ) -> io.BytesIO:
-        SMALL_TEXT_SIZE = 30
+        SMALL_TEXT_SIZE = 25
+        ALERT_TEXT_SIZE = 50
         TEXT_SIZE = 75
         WIDTH = 1500
         HEIGHT = 1000
 
         font = ImageFont.truetype("fonts/arial.ttf", TEXT_SIZE)
         small_font = ImageFont.truetype("fonts/arial.ttf", SMALL_TEXT_SIZE)
+        alert_font = ImageFont.truetype("fonts/arial.ttf", ALERT_TEXT_SIZE)
 
         background = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
 
@@ -60,19 +62,19 @@ class ImageClient:
             (0, 0, 0),
             font=font,
         )
-        # At the top right corner, write the Twitter handle
+        # At the bottom right corner, write the Twitter handle
         draw.text(
-            (WIDTH - 300, 150),
+            (WIDTH - 275, HEIGHT - 50),
             f"@{sports_client.league_code}AlphabetGame",
             (0, 0, 0),
             font=small_font,
         )
         if image_input.alert:
             draw.text(
-                (PLAYER_IMAGE_WIDTH + 15, HEIGHT - 85),
+                (PLAYER_IMAGE_WIDTH + 15, HEIGHT - 70),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
                 fill=(255, 0, 0) if "🚨" in image_input.alert else (0, 0, 0),
-                font=font,
+                font=alert_font,
             )
 
         LETTERS_TOP = 2 * (TEXT_SIZE + 10)
