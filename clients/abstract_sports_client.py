@@ -52,7 +52,7 @@ class AbstractSportsClient(ABC):
                 if abstract_game_state != "Preview" and game_id not in completed_games:
                     games.append(
                         Game(
-                            game_id=str(game_id),
+                            game_id=game_id,
                             is_complete=abstract_game_state == "Final",
                             home_team_id=g["teams"]["home"]["team"]["id"],
                             away_team_id=g["teams"]["away"]["team"]["id"],
