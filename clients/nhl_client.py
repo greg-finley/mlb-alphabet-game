@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import pprint
 
 import requests
 from my_types import Game, Play, State, TweetableEvent, TwitterCredentials
@@ -89,7 +88,7 @@ class NHLClient(AbstractSportsClient):
                         )
                     # If a goal, fire an event for every scorer
                     else:
-                        pprint.pprint(play)
+                        print(play)
                         for i, player in enumerate(play["players"]):
                             if player["playerType"] != "Goalie":
                                 name = (
