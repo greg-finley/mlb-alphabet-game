@@ -54,7 +54,7 @@ class ImageInput:
 
 @dataclass
 class Game:
-    game_id: int
+    game_id: str  # NBA needs strings like "0012200002"
     is_complete: bool
     home_team_id: int
     away_team_id: int

@@ -31,7 +31,7 @@ class AbstractSportsClient(ABC):
     def twitter_credentials(self) -> TwitterCredentials:
         pass
 
-    def get_current_games(self, completed_games: list[int]) -> list[Game]:
+    def get_current_games(self, completed_games: list[str]) -> list[Game]:
         # Fudge it by a day in either direction in case of timezone issues
         today = datetime.date.today()
         yesterday = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -50,7 +50,7 @@ class AbstractSportsClient(ABC):
                 if abstract_game_state != "Preview" and game_id not in completed_games:
                     games.append(
                         Game(
-                            game_id=game_id,
+                            game_id=str(game_id),
                             is_complete=abstract_game_state == "Final",
                             home_team_id=g["teams"]["home"]["team"]["id"],
                             away_team_id=g["teams"]["away"]["team"]["id"],

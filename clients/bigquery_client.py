@@ -12,7 +12,7 @@ class BigQueryClient:
         self.dry_run = dry_run
         self.league_code = sports_client.league_code
 
-    def get_recently_completed_games(self) -> list[int]:
+    def get_recently_completed_games(self) -> list[str]:
         if self.dry_run:
             return []
         query = f"""
@@ -29,7 +29,7 @@ class BigQueryClient:
     def set_completed_game(self, game: Game) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
-            VALUES ({game.game_id}, '{self.league_code}', CURRENT_TIMESTAMP())
+            VALUES ('{game.game_id}', '{self.league_code}', CURRENT_TIMESTAMP())
         """
         print(q)
         if not self.dry_run:
