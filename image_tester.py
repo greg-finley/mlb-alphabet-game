@@ -22,10 +22,11 @@ for item in [
             event_name="Home Run" if i == 0 else "Goal",
             matching_letters=item[0],
             alert=item[1],
+            next_letter="Q",
         )
 
         image_client.get_tweet_image(
             image_input=image_input,
             sports_client=sports_client,
-            local_save_name=f".test_images/{sports_client.league_code}{item[2]}",
+            local_save_name=f"test_images/{sports_client.league_code}{item[2]}",
         )

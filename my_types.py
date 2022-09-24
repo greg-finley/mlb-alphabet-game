@@ -49,6 +49,7 @@ class ImageInput:
     player_id: int  # 453568
     event_name: str  # Home Run
     matching_letters: list[str]  # ['L', 'M', 'N', 'O']
+    next_letter: str  # 'P'
     alert: str  # '' | '🚨 TRIPLE LETTER 🚨'
 
 

@@ -1,5 +1,5 @@
 .vscode/
-.test_images/
+test_images/
 __pycache__/
 .env
 .DS_Store

@@ -16,14 +16,14 @@ class ImageClient:
         local_save_name: str | None = None,
     ) -> io.BytesIO:
         SMALL_TEXT_SIZE = 25
-        ALERT_TEXT_SIZE = 50
         TEXT_SIZE = 75
+        NEXT_SIZE = 50
         WIDTH = 1500
         HEIGHT = 1000
 
         font = ImageFont.truetype("fonts/arial.ttf", TEXT_SIZE)
         small_font = ImageFont.truetype("fonts/arial.ttf", SMALL_TEXT_SIZE)
-        alert_font = ImageFont.truetype("fonts/arial.ttf", ALERT_TEXT_SIZE)
+        next_font = ImageFont.truetype("fonts/arial.ttf", NEXT_SIZE)
 
         background = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
 
@@ -64,20 +64,29 @@ class ImageClient:
         )
         # At the bottom right corner, write the Twitter handle
         draw.text(
-            (WIDTH - 275, HEIGHT - 50),
+            (WIDTH - 275, HEIGHT - 36),
             f"@{sports_client.league_code}AlphabetGame",
             (0, 0, 0),
             font=small_font,
         )
+        EXTRA_LINE = 0
         if image_input.alert:
             draw.text(
-                (PLAYER_IMAGE_WIDTH + 15, HEIGHT - 70),
+                (PLAYER_IMAGE_WIDTH + 15, (TEXT_SIZE + 2) * 2),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
                 fill=(255, 0, 0) if "🚨" in image_input.alert else (0, 0, 0),
-                font=alert_font,
+                font=font,
             )
+            EXTRA_LINE = 1
 
-        LETTERS_TOP = 2 * (TEXT_SIZE + 10)
+        draw.text(
+            (PLAYER_IMAGE_WIDTH + 15, HEIGHT - 58),
+            f"Next Letter: {image_input.next_letter}",
+            fill=(0, 0, 0),
+            font=next_font,
+        )
+
+        LETTERS_TOP = (2 + EXTRA_LINE) * (TEXT_SIZE + 10)
         LETTERS_BOTTOM = HEIGHT - TEXT_SIZE - 20
         LETTERS_LEFT = PLAYER_IMAGE_WIDTH + 10
         LETTERS_RIGHT = WIDTH - 10

@@ -44,6 +44,7 @@ We have cycled through the alphabet {state.times_cycled} times {self.sports_clie
                         event_name=play.event.name,
                         matching_letters=matching_letters,
                         alert=alert,
+                        next_letter=state.current_letter,
                     ),
                     sports_client=self.sports_client,
                 ),
