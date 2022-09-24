@@ -45,7 +45,7 @@ class AbstractSportsClient(ABC):
         games: list[Game] = []
         for d in dates:
             for g in d["games"]:
-                game_id = g["gamePk"]
+                game_id = str(g["gamePk"])
                 abstract_game_state = g["status"]["abstractGameState"]
                 if abstract_game_state != "Preview" and game_id not in completed_games:
                     games.append(
