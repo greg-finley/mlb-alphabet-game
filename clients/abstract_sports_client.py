@@ -47,6 +47,8 @@ class AbstractSportsClient(ABC):
             for g in d["games"]:
                 game_id = str(g["gamePk"])
                 abstract_game_state = g["status"]["abstractGameState"]
+                # Filter on our list of completed games instead of what the API says
+                # in case the game ended with a hit we have not processed yet
                 if abstract_game_state != "Preview" and game_id not in completed_games:
                     games.append(
                         Game(
