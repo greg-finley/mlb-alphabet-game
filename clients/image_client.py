@@ -15,8 +15,8 @@ class ImageClient:
         sports_client: AbstractSportsClient,
         local_save_name: str | None = None,
     ) -> io.BytesIO:
-        SMALL_TEXT_SIZE = 25
-        TEXT_SIZE = 50
+        SMALL_TEXT_SIZE = 30
+        TEXT_SIZE = 75
         WIDTH = 1500
         HEIGHT = 1000
 
@@ -51,25 +51,25 @@ class ImageClient:
         # Write the player name at 230 pixels to the right of the top left corner
         draw = ImageDraw.Draw(background)
         draw.text(
-            (PLAYER_IMAGE_WIDTH + 10, 0), image_input.player_name, (0, 0, 0), font=font
+            (PLAYER_IMAGE_WIDTH + 15, 0), image_input.player_name, (0, 0, 0), font=font
         )
-        # Write the hit type underneath that
+        # Write the event name underneath that
         draw.text(
-            (PLAYER_IMAGE_WIDTH + 10, TEXT_SIZE + 2),
+            (PLAYER_IMAGE_WIDTH + 15, TEXT_SIZE + 2),
             image_input.event_name,
             (0, 0, 0),
             font=font,
         )
-        # At the bottom right corner, write the Twitter handle
+        # At the top right corner, write the Twitter handle
         draw.text(
-            (WIDTH - 275, HEIGHT - 50),
+            (WIDTH - 300, 150),
             f"@{sports_client.league_code}AlphabetGame",
             (0, 0, 0),
             font=small_font,
         )
         if image_input.alert:
             draw.text(
-                (PLAYER_IMAGE_WIDTH + 10, HEIGHT - 70),
+                (PLAYER_IMAGE_WIDTH + 15, HEIGHT - 85),
                 image_input.alert.replace("🚨 ", "").replace("🚨", ""),
                 fill=(255, 0, 0) if "🚨" in image_input.alert else (0, 0, 0),
                 font=font,
