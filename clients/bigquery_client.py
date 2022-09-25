@@ -100,7 +100,7 @@ class BigQueryClient:
         raise Exception("No state found")
 
     def update_state(self, state: State) -> None:
-        q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}' WHERE sport='{self.league_code}';"
+        q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled} WHERE sport='{self.league_code}';"
         print(q)
         if not self.dry_run:
             self.client.query(q).result()
