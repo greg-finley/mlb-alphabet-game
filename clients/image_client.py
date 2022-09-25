@@ -3,7 +3,7 @@ from __future__ import annotations
 import io
 
 from my_types import ImageInput
-from PIL import Image, ImageDraw, ImageFont  # type: ignore
+from PIL import Image, ImageDraw, ImageFont, UnidentifiedImageError  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -27,9 +27,14 @@ class ImageClient:
 
         background = Image.new("RGB", (WIDTH, HEIGHT), (255, 255, 255))
 
-        player_img = Image.open(
-            io.BytesIO(sports_client.get_player_picture(image_input.player_id))
-        )
+        try:
+            player_img = Image.open(
+                io.BytesIO(sports_client.get_player_picture(image_input.player_id))
+            )
+        except UnidentifiedImageError:
+            player_img = Image.open(
+                io.BytesIO(sports_client.get_default_player_picture())
+            )
         if sports_client.league_code == "NHL":
             # Resize to 1000 pixels tall
             player_img = player_img.resize(

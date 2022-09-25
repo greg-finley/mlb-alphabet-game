@@ -116,3 +116,6 @@ class MLBClient(AbstractSportsClient):
         return requests.get(
             f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/h_1000,q_auto:best/v1/people/{player_id}/headshot/67/current"
         ).content
+
+    def get_default_player_picture(self) -> bytes:
+        raise NotImplementedError()

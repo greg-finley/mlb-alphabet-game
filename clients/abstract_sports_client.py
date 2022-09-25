@@ -68,6 +68,10 @@ class AbstractSportsClient(ABC):
         pass
 
     @abstractmethod
+    def get_default_player_picture(self) -> bytes:
+        pass
+
+    @abstractmethod
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:

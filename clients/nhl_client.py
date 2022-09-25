@@ -113,3 +113,8 @@ class NHLClient(AbstractSportsClient):
         return requests.get(
             f"https://cms.nhl.bamgrid.com/images/headshots/current/168x168/{player_id}@2x.jpg"
         ).content
+
+    def get_default_player_picture(self) -> bytes:
+        return requests.get(
+            "https://cms.nhl.bamgrid.com/images/headshots/current/168x168/skater@2x.jpg"
+        ).content
