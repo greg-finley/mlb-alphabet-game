@@ -16,7 +16,9 @@ class State:
     """Initially retrieved from BigQuery, updated if we find matches."""
 
     current_letter: str
+    initial_current_letter: str
     times_cycled: int
+    initial_times_cycled: int
 
     @property
     def next_letter(self) -> str:
