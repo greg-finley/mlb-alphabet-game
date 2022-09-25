@@ -30,15 +30,17 @@ def main(sports_client: AbstractSportsClient):
         return
     print(f"Found {len(games)} active games")
 
-    # Get the previous state from BigQuery
-    state = bigquery_client.get_initial_state()
-    print(state)
     known_play_ids = bigquery_client.get_known_play_ids()
     tweetable_plays = sports_client.get_tweetable_plays(games, known_play_ids)
 
     if not tweetable_plays:
         print("No new Tweetable plays")
+        bigquery_client.set_completed_games(games)
         return
+
+    # Get the previous state from BigQuery
+    state = bigquery_client.get_initial_state()
+    print(state)
 
     for p in tweetable_plays:
         if state.current_letter in p.player_name.upper():
