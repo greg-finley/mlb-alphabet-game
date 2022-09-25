@@ -10,11 +10,11 @@ The alphabet game, looking for the next letter in MLB player names as they get h
 
 The first endpoint is https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2022-09-17&endDate=2022-09-19. Get the games from yesterday through tomorrow just in case they have updated plays. Grab the gamePks:
 
-<img width="1104" src="https://storage.googleapis.com/greg-finley-public/schedule.png">
+<img width="1104" src="https://camo.githubusercontent.com/7a0ffceaea7abe4f1ebc0ff6295c331fe2ed428d9c4622aeaf11c278417a2894/68747470733a2f2f73746f726167652e676f6f676c65617069732e636f6d2f677265672d66696e6c65792d7075626c69632f7363686564756c652e706e67">
 
 And iterate over them, i.e. https://statsapi.mlb.com/api/v1/game/662024/playByPlay, grabbing all plays:
 
-<img width="1104" src="https://storage.googleapis.com/greg-finley-public/plays.png">
+<img width="1104" src="https://camo.githubusercontent.com/386896740a8230126d8f45ab95f839481d7ca5e9ea7bdf10b7814f8e50327c88/68747470733a2f2f73746f726167652e676f6f676c65617069732e636f6d2f677265672d66696e6c65792d7075626c69632f706c6179732e706e67">
 
 Screenshots of JSON files from this README were made using http://jsonviewer.stack.hu/.
 
