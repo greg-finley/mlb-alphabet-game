@@ -14,7 +14,6 @@ load_dotenv()
 
 
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
-LOCAL = os.environ.get("LOCAL", "false").lower() == "true"
 
 
 def main(sports_client: AbstractSportsClient):
