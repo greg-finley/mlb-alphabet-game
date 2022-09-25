@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import tweepy  # type: ignore
-from my_types import ImageInput, Play, State
+from my_types import ImageInput, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.image_client import ImageClient
@@ -21,11 +21,12 @@ class TwitterClient:
         self.sports_client = sports_client
         self.dry_run = dry_run
 
-    def tweet(self, play: Play, state: State, matching_letters: list[str]) -> None:
-        assert play.event
+    def tweet(
+        self, tweetable_play: TweetablePlay, state: State, matching_letters: list[str]
+    ) -> None:
         alert = self._alert(matching_letters)
 
-        tweet_text = f"""{alert}{play.event.player_name} just {play.event.phrase}! {self.sports_client.get_team_twitter_hashtag(play.event.player_team_id)}
+        tweet_text = f"""{alert}{tweetable_play.player_name} just {tweetable_play.phrase}! {self.sports_client.get_team_twitter_hashtag(tweetable_play.player_team_id)}
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.league_code} Alphabet Game is now {state.current_letter}.
 
@@ -39,9 +40,9 @@ We have cycled through the alphabet {state.times_cycled} times {self.sports_clie
                 filename="dummy_string",
                 file=image_client.get_tweet_image(
                     ImageInput(
-                        player_name=play.event.player_name,
-                        player_id=play.event.player_id,
-                        event_name=play.event.name,
+                        player_name=tweetable_play.player_name,
+                        player_id=tweetable_play.player_id,
+                        event_name=tweetable_play.name,
                         matching_letters=matching_letters,
                         alert=alert,
                         next_letter=state.current_letter,

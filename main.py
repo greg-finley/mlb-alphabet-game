@@ -34,17 +34,18 @@ def main(sports_client: AbstractSportsClient):
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
     print(state)
-    unprocessed_plays = sports_client.get_unprocessed_plays(games, state)
+    known_play_ids = bigquery_client.get_known_play_ids()
+    tweetable_plays = sports_client.get_tweetable_plays(games, known_play_ids)
 
-    if not unprocessed_plays:
-        print("No new plays")
+    if not tweetable_plays:
+        print("No new Tweetable plays")
         return
 
-    for p in unprocessed_plays:
-        if p.event and state.current_letter in p.event.player_name.upper():
+    for p in tweetable_plays:
+        if state.current_letter in p.player_name.upper():
             # Find all matches in the batter's name amid the upcoming letters and update the state
             matching_letters: list[str] = []
-            while state.current_letter in p.event.player_name.upper():
+            while state.current_letter in p.player_name.upper():
                 matching_letters.append(state.current_letter)
                 state.current_letter = state.next_letter
                 if state.current_letter == "A":
@@ -54,12 +55,10 @@ def main(sports_client: AbstractSportsClient):
             twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
             twitter_client.tweet(p, state, matching_letters)
 
-    # At the end, update BigQuery with any state changes and the last end time
-    state.last_time = unprocessed_plays[-1].end_time
+    # At the end, update BigQuery with any state changes
     bigquery_client.update_state(state)
-    for g in games:
-        if g.is_complete:
-            bigquery_client.set_completed_game(g)
+    bigquery_client.add_tweetable_plays(tweetable_plays)
+    bigquery_client.set_completed_games(games)
 
 
 def main_mlb():

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 import requests
-from my_types import Game, Play, State, TweetableEvent, TwitterCredentials
+from my_types import Game, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -66,17 +66,21 @@ class MLBClient(AbstractSportsClient):
             access_token_secret=os.environ["MLB_TWITTER_ACCESS_SECRET"],
         )
 
-    def get_unprocessed_plays(self, games: list[Game], state: State) -> list[Play]:
+    def get_tweetable_plays(
+        self, games: list[Game], known_play_ids: dict[str, list[str]]
+    ) -> list[TweetablePlay]:
         """Get the plays that we haven't processed yet and sort them by end_time."""
-        plays: list[Play] = []
+        tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
+            known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
             all_plays = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
             for p in all_plays:
+                play_id = str(p["atBatIndex"])
                 if p["about"]["isComplete"] and (
-                    self.dry_run or p["about"]["endTime"] > state.last_time
+                    self.dry_run or play_id not in known_play_ids_for_this_game
                 ):
                     hit_name = (
                         p["result"]["event"]
@@ -84,8 +88,13 @@ class MLBClient(AbstractSportsClient):
                         in ["single", "double", "triple", "home_run"]
                         else None
                     )
-                    event = (
-                        TweetableEvent(
+                    if not hit_name:
+                        continue
+
+                    tweetable_plays.append(
+                        TweetablePlay(
+                            play_id=play_id,
+                            game_id=g.game_id,
                             name=hit_name,
                             phrase=f"hit a {hit_name.lower()}",
                             player_name=p["matchup"]["batter"]["fullName"],
@@ -93,21 +102,15 @@ class MLBClient(AbstractSportsClient):
                             player_team_id=g.away_team_id
                             if p["about"]["isTopInning"]
                             else g.home_team_id,
+                            tiebreaker=0,
+                            end_time=p["about"]["endTime"],
                         )
-                        if hit_name
-                        else None
                     )
-                    play = Play(
-                        event=event,
-                        end_time=p["about"]["endTime"],
-                        tiebreaker=0,  # Cannot get two hits in one play in baseball
-                    )
-                    plays.append(play)
 
         # Sort plays by end_time
-        plays.sort(key=lambda p: p.end_time)
-        print(f"Found {len(plays)} new plays")
-        return plays
+        tweetable_plays.sort(key=lambda p: p.end_time)
+        print(f"Found {len(tweetable_plays)} new Tweetable plays")
+        return tweetable_plays
 
     def get_player_picture(self, player_id: int) -> bytes:
         return requests.get(

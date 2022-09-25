@@ -2,7 +2,7 @@ import datetime
 from abc import ABC, abstractmethod
 
 import requests
-from my_types import Game, Play, State, TwitterCredentials
+from my_types import Game, TweetablePlay, TwitterCredentials
 
 
 class AbstractSportsClient(ABC):
@@ -68,5 +68,8 @@ class AbstractSportsClient(ABC):
         pass
 
     @abstractmethod
-    def get_unprocessed_plays(self, games: list[Game], state: State) -> list[Play]:
+    def get_tweetable_plays(
+        self, games: list[Game], known_play_ids: dict[str, list[str]]
+    ) -> list[TweetablePlay]:
+        """Find any new plays that could be Tweetable, depending on the State. We need to record them even if not tweetable"""
         pass

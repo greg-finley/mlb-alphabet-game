@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 import requests
-from my_types import Game, Play, State, TweetableEvent, TwitterCredentials
+from my_types import Game, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -67,55 +67,47 @@ class NHLClient(AbstractSportsClient):
             access_token_secret=os.environ["NHL_TWITTER_ACCESS_SECRET"],
         )
 
-    def get_unprocessed_plays(self, games: list[Game], state: State) -> list[Play]:
-        """Get the plays that we haven't processed yet and sort them by end_time."""
-        plays: list[Play] = []
+    def get_tweetable_plays(
+        self, games: list[Game], known_play_ids: dict[str, list[str]]
+    ) -> list[TweetablePlay]:
+        tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
             all_plays = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
+            known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
             for play in all_plays:
-                if self.dry_run or play["about"]["dateTime"] > state.last_time:
-                    # If not a goal, just fire one event
-                    if play["result"]["event"] != "Goal":
-                        plays.append(
-                            Play(
-                                event=None,
-                                end_time=play["about"]["dateTime"],
-                                tiebreaker=0,
+                play_id = str(play["about"]["eventIdx"])
+                if play["result"]["event"] == "Goal" and (
+                    self.dry_run or play_id not in known_play_ids_for_this_game
+                ):
+                    print(f"NHL Goal: {str(play)}")
+                    for i, player in enumerate(play["players"]):
+                        if player["playerType"] != "Goalie":
+                            name = (
+                                "Goal" if player["playerType"] == "Scorer" else "Assist"
                             )
-                        )
-                    # If a goal, fire an event for every scorer
-                    else:
-                        print(play)
-                        for i, player in enumerate(play["players"]):
-                            if player["playerType"] != "Goalie":
-                                name = (
-                                    "Goal"
-                                    if player["playerType"] == "Scorer"
-                                    else "Assist"
+                            tweetable_plays.append(
+                                TweetablePlay(
+                                    play_id=play_id,
+                                    game_id=g.game_id,
+                                    name=name,
+                                    phrase="scored a goal"
+                                    if name == "Goal"
+                                    else "got an assist",
+                                    player_name=player["player"]["fullName"],
+                                    player_id=player["player"]["id"],
+                                    player_team_id=play["team"]["id"],
+                                    end_time=play["about"]["dateTime"],
+                                    tiebreaker=i,
                                 )
-                                plays.append(
-                                    Play(
-                                        event=TweetableEvent(
-                                            name=name,
-                                            phrase="scored a goal"
-                                            if name == "Goal"
-                                            else "got an assist",
-                                            player_name=player["player"]["fullName"],
-                                            player_id=player["player"]["id"],
-                                            player_team_id=play["team"]["id"],
-                                        ),
-                                        end_time=play["about"]["dateTime"],
-                                        tiebreaker=i,
-                                    )
-                                )
+                            )
 
         # Sort plays by end_time and tiebreaker
-        plays.sort(key=lambda p: (p.end_time, p.tiebreaker))
-        print(f"Found {len(plays)} new plays")
-        return plays
+        tweetable_plays.sort(key=lambda p: (p.end_time, p.tiebreaker))
+        print(f"Found {len(tweetable_plays)} new Tweetable plays")
+        return tweetable_plays
 
     def get_player_picture(self, player_id: int) -> bytes:
         return requests.get(

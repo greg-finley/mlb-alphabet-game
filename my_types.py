@@ -13,12 +13,10 @@ class TwitterCredentials:
 
 @dataclass
 class State:
-    """Initially retrieved from BigQuery, updated if we find matches and
-    continue to process more plays this run."""
+    """Initially retrieved from BigQuery, updated if we find matches."""
 
     current_letter: str
     times_cycled: int
-    last_time: str
 
     @property
     def next_letter(self) -> str:
@@ -26,21 +24,26 @@ class State:
 
 
 @dataclass
-class Play:
-    """A play that might be relevant to tweet about."""
+class TweetablePlay:
+    """A play that if tweetable, assuming we are on the right letter. We need to record the list of seen plays on end run."""
 
-    event: TweetableEvent | None
+    play_id: str
+    game_id: str
     end_time: str
-    tiebreaker: int  # Hockey can have multiple scorers per play, so we need a tiebreaker
-
-
-@dataclass
-class TweetableEvent:
     name: str
     phrase: str
     player_name: str
     player_id: int
     player_team_id: int
+    tiebreaker: int  # Hockey can have multiple scorers per play, so we need a tiebreaker
+
+
+@dataclass
+class DedupedTweetablePlay:
+    """A game can have multiple records for the same play_id in hockey, this dedupes it"""
+
+    play_id: str
+    game_id: str
 
 
 @dataclass
