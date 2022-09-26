@@ -32,8 +32,8 @@ class TweetablePlay:
     play_id: str
     game_id: str
     end_time: str
-    name: str
-    phrase: str
+    image_name: str  # 2-Run Home Run
+    tweet_phrase: str  # hit a 2-run dinger
     player_name: str
     player_id: int
     player_team_id: int

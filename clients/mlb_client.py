@@ -1,11 +1,23 @@
 from __future__ import annotations
 
 import os
+import random
 
 import requests
 from my_types import Game, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
+
+HOME_RUN_NAMES = [
+    "home run",
+    "homer",
+    "dinger",
+    "tater",
+    "blast",
+    "bomb",
+    "long ball",
+    "deep fly",
+]
 
 
 class MLBClient(AbstractSportsClient):
@@ -89,13 +101,17 @@ class MLBClient(AbstractSportsClient):
                     and (self.dry_run or play_id not in known_play_ids_for_this_game)
                 ):
                     if p["result"]["rbi"] == 1:
-                        hit_name = "Solo Home Run"
+                        image_name = "Solo Home Run"
+                        hit_name = f"solo {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 2:
-                        hit_name = "2-Run Home Run"
+                        image_name = "2-Run Home Run"
+                        hit_name = f"two-run {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 3:
-                        hit_name = "3-Run Home Run"
+                        image_name = "3-Run Home Run"
+                        hit_name = f"three-run {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 4:
-                        hit_name = "Grand Slam"
+                        image_name = "Grand Slam"
+                        hit_name = "grand slam"
                     else:
                         raise ValueError("Unexpected RBI value")
 
@@ -103,8 +119,8 @@ class MLBClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
-                            name=hit_name,
-                            phrase=f"hit a {hit_name.lower()}",
+                            image_name=image_name,
+                            tweet_phrase=f"hit a {hit_name}",
                             player_name=p["matchup"]["batter"]["fullName"],
                             player_id=p["matchup"]["batter"]["id"],
                             player_team_id=g.away_team_id
