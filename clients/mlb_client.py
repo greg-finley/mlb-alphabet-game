@@ -19,8 +19,12 @@ class MLBClient(AbstractSportsClient):
         return "MLB"
 
     @property
+    def alphabet_game_name(self) -> str:
+        return "Home Run"
+
+    @property
     def cycle_time_period(self) -> str:
-        return "since this bot was created on 9/17"
+        return "since Sept. 25, 2022"
 
     @property
     def team_to_hashtag(self) -> dict:
@@ -69,7 +73,7 @@ class MLBClient(AbstractSportsClient):
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:
-        """Get the plays that we haven't processed yet and sort them by end_time."""
+        """Get home runs we haven't processed yet and sort them by end_time."""
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
@@ -79,17 +83,21 @@ class MLBClient(AbstractSportsClient):
             ).json()["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
-                if p["about"]["isComplete"] and (
-                    self.dry_run or play_id not in known_play_ids_for_this_game
+                if (
+                    p["about"]["isComplete"]
+                    and p["result"]["eventType"] == "home_run"
+                    and (self.dry_run or play_id not in known_play_ids_for_this_game)
                 ):
-                    hit_name = (
-                        p["result"]["event"]
-                        if p["result"]["eventType"]
-                        in ["single", "double", "triple", "home_run"]
-                        else None
-                    )
-                    if not hit_name:
-                        continue
+                    if p["result"]["rbi"] == 1:
+                        hit_name = "Solo Home Run"
+                    elif p["result"]["rbi"] == 2:
+                        hit_name = "2-Run Home Run"
+                    elif p["result"]["rbi"] == 3:
+                        hit_name = "3-Run Home Run"
+                    elif p["result"]["rbi"] == 4:
+                        hit_name = "Grand Slam"
+                    else:
+                        raise ValueError("Unexpected RBI value")
 
                     tweetable_plays.append(
                         TweetablePlay(

@@ -18,6 +18,10 @@ class NHLClient(AbstractSportsClient):
         return "NHL"
 
     @property
+    def alphabet_game_name(self) -> str:
+        return "NHL"
+
+    @property
     def cycle_time_period(self) -> str:
         return "in the 2022 preseason"
 
@@ -85,10 +89,11 @@ class NHLClient(AbstractSportsClient):
                 if play["result"]["event"] == "Goal" and (
                     self.dry_run or play_id not in known_play_ids_for_this_game
                 ):
-                    print(f"NHL Goal: {str(play)}")
+                    scorer_found = False
                     for i, player in enumerate(play["players"]):
                         if player["playerType"] != "Scorer":
                             continue
+                        scorer_found = True
                         tweetable_plays.append(
                             TweetablePlay(
                                 play_id=play_id,
@@ -101,6 +106,11 @@ class NHLClient(AbstractSportsClient):
                                 end_time=play["about"]["dateTime"],
                                 tiebreaker=i,
                             )
+                        )
+
+                    if not scorer_found:
+                        raise ValueError(
+                            f"Could not find a scorer for play {play_id} in game {g.game_id}"
                         )
 
         # Sort plays by end_time and tiebreaker

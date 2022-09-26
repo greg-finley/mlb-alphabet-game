@@ -18,6 +18,11 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
+    def alphabet_game_name(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
     def cycle_time_period(self) -> str:
         pass
 

@@ -19,7 +19,7 @@ for item in [
         image_input = ImageInput(
             player_name="Charlie Blackmon" if i == 0 else "Alex Ovechkin",
             player_id=453568 if i == 0 else 8471214,
-            event_name="Home Run" if i == 0 else "Goal",
+            event_name="2-Run Home Run" if i == 0 else "Goal",
             matching_letters=item[0],
             alert=item[1],
             next_letter="Q",
