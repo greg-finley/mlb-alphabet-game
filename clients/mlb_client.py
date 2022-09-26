@@ -89,13 +89,13 @@ class MLBClient(AbstractSportsClient):
                     and (self.dry_run or play_id not in known_play_ids_for_this_game)
                 ):
                     if p["result"]["rbi"] == 1:
-                        hit_name = "Solo Home Run"
+                        image_name = "Solo Home Run"
                     elif p["result"]["rbi"] == 2:
-                        hit_name = "2-Run Home Run"
+                        image_name = "2-Run Home Run"
                     elif p["result"]["rbi"] == 3:
-                        hit_name = "3-Run Home Run"
+                        image_name = "3-Run Home Run"
                     elif p["result"]["rbi"] == 4:
-                        hit_name = "Grand Slam"
+                        image_name = "Grand Slam"
                     else:
                         raise ValueError("Unexpected RBI value")
 
@@ -103,8 +103,8 @@ class MLBClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
-                            name=hit_name,
-                            phrase=f"hit a {hit_name.lower()}",
+                            image_name=image_name,
+                            tweet_phrase=f"hit a {image_name.lower()}",
                             player_name=p["matchup"]["batter"]["fullName"],
                             player_id=p["matchup"]["batter"]["id"],
                             player_team_id=g.away_team_id
