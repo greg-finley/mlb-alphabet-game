@@ -70,6 +70,9 @@ class NHLClient(AbstractSportsClient):
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:
+        """
+        Get all goals that we haven't processed yet, only the goal scorer (not the assister).
+        """
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
@@ -84,25 +87,21 @@ class NHLClient(AbstractSportsClient):
                 ):
                     print(f"NHL Goal: {str(play)}")
                     for i, player in enumerate(play["players"]):
-                        if player["playerType"] != "Goalie":
-                            name = (
-                                "Goal" if player["playerType"] == "Scorer" else "Assist"
+                        if player["playerType"] != "Scorer":
+                            continue
+                        tweetable_plays.append(
+                            TweetablePlay(
+                                play_id=play_id,
+                                game_id=g.game_id,
+                                name="Goal",
+                                phrase="scored a goal",
+                                player_name=player["player"]["fullName"],
+                                player_id=player["player"]["id"],
+                                player_team_id=play["team"]["id"],
+                                end_time=play["about"]["dateTime"],
+                                tiebreaker=i,
                             )
-                            tweetable_plays.append(
-                                TweetablePlay(
-                                    play_id=play_id,
-                                    game_id=g.game_id,
-                                    name=name,
-                                    phrase="scored a goal"
-                                    if name == "Goal"
-                                    else "got an assist",
-                                    player_name=player["player"]["fullName"],
-                                    player_id=player["player"]["id"],
-                                    player_team_id=play["team"]["id"],
-                                    end_time=play["about"]["dateTime"],
-                                    tiebreaker=i,
-                                )
-                            )
+                        )
 
         # Sort plays by end_time and tiebreaker
         tweetable_plays.sort(key=lambda p: (p.end_time, p.tiebreaker))
