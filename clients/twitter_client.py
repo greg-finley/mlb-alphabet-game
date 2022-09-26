@@ -30,7 +30,7 @@ class TwitterClient:
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.league_code} Alphabet Game is now {state.current_letter}.
 
-We have cycled through the alphabet {state.times_cycled} times {self.sports_client.cycle_time_period}."""
+We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {self.sports_client.cycle_time_period}."""
         print(tweet_text)
 
         if not self.dry_run:
