@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import requests
 from my_types import Game, TweetablePlay, TwitterCredentials
@@ -89,28 +90,27 @@ class NHLClient(AbstractSportsClient):
                 if play["result"]["event"] == "Goal" and (
                     self.dry_run or play_id not in known_play_ids_for_this_game
                 ):
-                    scorer_found = False
+                    scorer: Any = None
                     for i, player in enumerate(play["players"]):
                         if player["playerType"] != "Scorer":
                             continue
-                        scorer_found = True
+                        else:
+                            scorer = player
+                            break
+
+                    if scorer:
                         tweetable_plays.append(
                             TweetablePlay(
                                 play_id=play_id,
                                 game_id=g.game_id,
                                 image_name="Goal",
                                 tweet_phrase="scored a goal",
-                                player_name=player["player"]["fullName"],
-                                player_id=player["player"]["id"],
+                                player_name=scorer["player"]["fullName"],
+                                player_id=scorer["player"]["id"],
                                 player_team_id=play["team"]["id"],
                                 end_time=play["about"]["dateTime"],
                                 tiebreaker=i,
                             )
-                        )
-
-                    if not scorer_found:
-                        raise ValueError(
-                            f"Could not find a scorer for play {play_id} in game {g.game_id}"
                         )
 
         # Sort plays by end_time and tiebreaker

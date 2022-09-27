@@ -1,11 +1,18 @@
 from clients.image_client import ImageClient
 from clients.mlb_client import MLBClient
+from clients.nba_client import NBAClient
 from clients.nhl_client import NHLClient
 from my_types import ImageInput
 
 image_client = ImageClient()
-mlb_client = MLBClient(dry_run=True)
-nhl_client = NHLClient(dry_run=True)
+mlb = (MLBClient(dry_run=True), "Charlie Blackmon", 453568, "2-Run Home Run")
+nhl = (NHLClient(dry_run=True), "Nathan MacKinnon", 8477492, "Goal")
+nba = (
+    NBAClient(dry_run=True, research=True),
+    "Montrezl Harrell",
+    1626149,
+    "Slam Dunk",
+)
 
 for item in [
     (["K"], "", "one.png"),
@@ -15,11 +22,11 @@ for item in [
     (["K", "L", "M", "N", "O"], "🚨 QUINTUPLE LETTER 🚨", "five.png"),
     (["K", "L", "M", "N", "O", "P"], "🚨 SEXTUPLE LETTER 🚨", "six.png"),
 ]:
-    for i, sports_client in enumerate([mlb_client, nhl_client]):
+    for i, sport in enumerate([mlb, nhl, nba]):
         image_input = ImageInput(
-            player_name="Charlie Blackmon" if i == 0 else "Alex Ovechkin",
-            player_id=453568 if i == 0 else 8471214,
-            event_name="2-Run Home Run" if i == 0 else "Goal",
+            player_name=sport[1],
+            player_id=sport[2],
+            event_name=sport[3],
             matching_letters=item[0],
             alert=item[1],
             next_letter="Q",
@@ -27,6 +34,6 @@ for item in [
 
         image_client.get_tweet_image(
             image_input=image_input,
-            sports_client=sports_client,
-            local_save_name=f"test_images/{sports_client.league_code}{item[2]}",
+            sports_client=sport[0],
+            local_save_name=f"test_images/{sport[0].league_code}{item[2]}",
         )
