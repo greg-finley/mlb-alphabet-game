@@ -96,6 +96,7 @@ class NHLClient(AbstractSportsClient):
                             continue
                         else:
                             scorer = player
+                            break
 
                     if scorer:
                         tweetable_plays.append(
