@@ -1,11 +1,23 @@
 from __future__ import annotations
 
 import os
+import random
 
 import requests
 from my_types import Game, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
+
+HOME_RUN_NAMES = [
+    "home run",
+    "homer",
+    "dinger",
+    "tater",
+    "blast",
+    "bomb",
+    "long ball",
+    "deep fly",
+]
 
 
 class MLBClient(AbstractSportsClient):
@@ -90,12 +102,16 @@ class MLBClient(AbstractSportsClient):
                 ):
                     if p["result"]["rbi"] == 1:
                         image_name = "Solo Home Run"
+                        hit_name = f"solo {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 2:
                         image_name = "2-Run Home Run"
+                        hit_name = f"two-run {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 3:
                         image_name = "3-Run Home Run"
+                        hit_name = f"three-run {random.choice(HOME_RUN_NAMES)}"
                     elif p["result"]["rbi"] == 4:
                         image_name = "Grand Slam"
+                        hit_name = "grand slam"
                     else:
                         raise ValueError("Unexpected RBI value")
 
@@ -104,7 +120,7 @@ class MLBClient(AbstractSportsClient):
                             play_id=play_id,
                             game_id=g.game_id,
                             image_name=image_name,
-                            tweet_phrase=f"hit a {image_name.lower()}",
+                            tweet_phrase=f"hit a {hit_name}",
                             player_name=p["matchup"]["batter"]["fullName"],
                             player_id=p["matchup"]["batter"]["id"],
                             player_team_id=g.away_team_id
