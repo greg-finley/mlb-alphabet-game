@@ -72,6 +72,10 @@ class NHLClient(AbstractSportsClient):
             access_token_secret=os.environ["NHL_TWITTER_ACCESS_SECRET"],
         )
 
+    @property
+    def short_tweet_phrase(self) -> str:
+        return "scored a goal"
+
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:
@@ -104,7 +108,7 @@ class NHLClient(AbstractSportsClient):
                                 play_id=play_id,
                                 game_id=g.game_id,
                                 image_name="Goal",
-                                tweet_phrase="scored a goal",
+                                tweet_phrase=self.short_tweet_phrase,
                                 player_name=scorer["player"]["fullName"],
                                 player_id=scorer["player"]["id"],
                                 player_team_id=play["team"]["id"],

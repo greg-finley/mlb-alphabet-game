@@ -82,6 +82,10 @@ class MLBClient(AbstractSportsClient):
             access_token_secret=os.environ["MLB_TWITTER_ACCESS_SECRET"],
         )
 
+    @property
+    def short_tweet_phrase(self) -> str:
+        return "hit a homer"
+
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:

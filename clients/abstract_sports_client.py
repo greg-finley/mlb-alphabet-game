@@ -36,6 +36,12 @@ class AbstractSportsClient(ABC):
     def twitter_credentials(self) -> TwitterCredentials:
         pass
 
+    @property
+    @abstractmethod
+    def short_tweet_phrase(self) -> str:
+        "In case the tweet is too long, use something short"
+        pass
+
     def get_current_games(self, completed_games: list[str]) -> list[Game]:
         # Fudge it by a day in either direction in case of timezone issues
         today = datetime.date.today()

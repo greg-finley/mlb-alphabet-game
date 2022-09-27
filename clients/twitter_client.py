@@ -26,11 +26,13 @@ class TwitterClient:
     ) -> None:
         alert = self._alert(matching_letters)
 
-        tweet_text = f"""{alert}{tweetable_play.player_name} just {tweetable_play.tweet_phrase}! {self.sports_client.get_team_twitter_hashtag(tweetable_play.player_team_id)}
-
-His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
-
-We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {self.sports_client.cycle_time_period}."""
+        tweet_text = self._tweet_text(
+            alert, tweetable_play, state, matching_letters, use_short_phrase=False
+        )
+        if len(tweet_text) > 280:
+            tweet_text = self._tweet_text(
+                alert, tweetable_play, state, matching_letters, use_short_phrase=True
+            )
         print(tweet_text)
 
         if not self.dry_run:
@@ -94,3 +96,22 @@ We have cycled through the alphabet {state.times_cycled} time{'' if state.times_
         if len(listed) == 2:
             return listed[0] + " and " + listed[1]
         return ", ".join(listed[:-1]) + ", and " + listed[-1]
+
+    def _tweet_text(
+        self,
+        alert: str,
+        tweetable_play: TweetablePlay,
+        state: State,
+        matching_letters: list[str],
+        use_short_phrase=False,
+    ):
+        if use_short_phrase:
+            tweet_phrase = self.sports_client.short_tweet_phrase
+        else:
+            tweet_phrase = tweetable_play.tweet_phrase
+
+        return f"""{alert}{tweetable_play.player_name} just {tweet_phrase}! {self.sports_client.get_team_twitter_hashtag(tweetable_play.player_team_id)}
+
+His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
+
+We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {self.sports_client.cycle_time_period}."""

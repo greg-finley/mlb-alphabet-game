@@ -2,11 +2,29 @@ from __future__ import annotations
 
 import datetime
 import os
+import random
 
 import requests
 from my_types import Game, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
+
+NBA_JAM_DUNK_PHRASES: list[str] = [
+    "Hey come on, the rim has feelings too",
+    "He's on fire",
+    "Razzle Dazzle",
+    "Boomshakalaka",
+    "Woooooahhhh, Kaboom",
+    "He's got the touch",
+    "Did you see where he just took off from?",
+    "Slamma lamma ding dong",
+    "He just put the boom in the shakalaka",
+    "He's heating up like a trending topic",
+    "He's a member of the Tea Party. The Thunder Dunk party",
+    "Knock, knock ... who's there? BOOMSHAKALAKA",
+    "The donut shop called, they want their dunkin back",
+    "You bring the peanut butter, I'll bring the jam",
+]
 
 
 class NBAClient(AbstractSportsClient):
@@ -115,6 +133,10 @@ class NBAClient(AbstractSportsClient):
             access_token_secret=os.environ["NBA_TWITTER_ACCESS_SECRET"],
         )
 
+    @property
+    def short_tweet_phrase(self) -> str:
+        return "dunked"
+
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:
@@ -140,7 +162,7 @@ class NBAClient(AbstractSportsClient):
                             game_id=g.game_id,
                             end_time=p["timeActual"],
                             image_name="Slam Dunk",
-                            tweet_phrase="dunked",
+                            tweet_phrase=f"dunked. {random.choice(NBA_JAM_DUNK_PHRASES)}",
                             player_name=self._get_player_name(player_id),
                             player_id=player_id,
                             player_team_id=p["teamId"],
