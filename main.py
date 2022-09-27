@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.bigquery_client import BigQueryClient
 from clients.mlb_client import MLBClient
+from clients.nba_client import NBAClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
 
@@ -76,6 +77,14 @@ def main_nhl():
     print("Ending NHL")
 
 
+def main_nba(research=False):
+    print("Starting NBA")
+    nba_client = NBAClient(dry_run=DRY_RUN, research=research)
+    main(nba_client)
+    print("Ending NBA")
+
+
 def run(event, context):
     main_mlb()
     main_nhl()
+    main_nba(research=False)

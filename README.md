@@ -4,7 +4,9 @@ https://twitter.com/MLBAlphabetGame
 
 https://twitter.com/NHLAlphabetGame
 
-The alphabet game, looking for the next letter in MLB player names as they get hits.
+https://twitter.com/NBAAlphabetGame
+
+The alphabet game, looking for the next letter in MLB player names as they hit home runs, the next letter in NHL player names as they score goals, and the next letter in NBA player names as they dunk.
 
 # Poll the MLB public API endpoints.
 

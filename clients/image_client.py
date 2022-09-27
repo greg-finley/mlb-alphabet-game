@@ -49,6 +49,24 @@ class ImageClient:
                     HEIGHT,
                 )
             )
+        elif sports_client.league_code == "NBA":
+            # Resize to 1000 pixels tall
+            player_img = player_img.convert("RGBA")
+            player_img = player_img.resize(
+                (int(player_img.width * (HEIGHT / player_img.height)), HEIGHT)
+            )
+            # Keep the middle 666 pixels wide
+            player_img = player_img.crop(
+                (
+                    351,
+                    0,
+                    1368 - 351,
+                    HEIGHT,
+                )
+            )
+            player_img_bk = Image.new("RGBA", player_img.size, "WHITE")
+            player_img_bk.paste(player_img, (0, 0), player_img)
+            player_img = player_img_bk
 
         PLAYER_IMAGE_WIDTH = player_img.width
 
