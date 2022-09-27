@@ -94,6 +94,8 @@ class NHLClient(AbstractSportsClient):
                         if player["playerType"] != "Scorer":
                             continue
                         scorer_found = True
+
+                    if scorer_found:
                         tweetable_plays.append(
                             TweetablePlay(
                                 play_id=play_id,
@@ -106,11 +108,6 @@ class NHLClient(AbstractSportsClient):
                                 end_time=play["about"]["dateTime"],
                                 tiebreaker=i,
                             )
-                        )
-
-                    if not scorer_found:
-                        raise ValueError(
-                            f"Could not find a scorer for play {play_id} in game {g.game_id}"
                         )
 
         # Sort plays by end_time and tiebreaker
