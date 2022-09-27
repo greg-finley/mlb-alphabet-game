@@ -114,6 +114,7 @@ class NHLClient(AbstractSportsClient):
                                 player_team_id=play["team"]["id"],
                                 end_time=play["about"]["dateTime"],
                                 tiebreaker=i,
+                                score="",  # TODO
                             )
                         )
 

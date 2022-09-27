@@ -38,6 +38,7 @@ class TweetablePlay:
     player_id: int
     player_team_id: int
     tiebreaker: int  # Hockey can have multiple scorers per play, so we need a tiebreaker
+    score: str  # CIN (2) @ MIL (1) 🔺8
 
 
 @dataclass

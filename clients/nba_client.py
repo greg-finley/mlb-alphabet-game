@@ -167,6 +167,7 @@ class NBAClient(AbstractSportsClient):
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
+                            score="",  # TODO
                         )
                     )
 

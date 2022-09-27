@@ -74,6 +74,41 @@ class MLBClient(AbstractSportsClient):
         }
 
     @property
+    def team_to_abbrevation(self) -> dict:
+        return {
+            108: "LAA",
+            109: "ARI",
+            110: "BAL",
+            111: "BOS",
+            112: "CHC",
+            113: "CIN",
+            114: "CLE",
+            115: "COL",
+            116: "DET",
+            117: "HOU",
+            118: "KCR",
+            119: "LAD",
+            120: "WAS",
+            121: "NYM",
+            133: "OAK",
+            134: "PIT",
+            135: "SDP",
+            136: "SEA",
+            137: "SFG",
+            138: "STL",
+            139: "TBR",
+            140: "TEX",
+            141: "TOR",
+            142: "MIN",
+            143: "PHI",
+            144: "ATL",
+            145: "CWS",
+            146: "MIA",
+            147: "NYY",
+            158: "MIL",
+        }
+
+    @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
             consumer_key=os.environ["MLB_TWITTER_CONSUMER_KEY"],
@@ -132,6 +167,7 @@ class MLBClient(AbstractSportsClient):
                             else g.home_team_id,
                             tiebreaker=0,
                             end_time=p["about"]["endTime"],
+                            score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['result']['awayScore']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['result']['homeScore']}) {'🔺' if p['about']['isTopInning'] else '🔻'}{p['about']['inning']}",
                         )
                     )
 
