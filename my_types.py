@@ -1,6 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
+
+
+class SeasonPeriod(Enum):
+    PRESEASON = "preseason"
+    REGULAR_SEASON = "season"
+    PLAYIN = "play-in games"  # NBA only
+    PLAYOFFS = "playoffs"
 
 
 @dataclass
@@ -39,6 +47,8 @@ class TweetablePlay:
     player_team_id: int
     tiebreaker: int  # Hockey can have multiple scorers per play, so we need a tiebreaker
     score: str  # CIN (2) @ MIL (1) 🔺8
+    season_period: SeasonPeriod
+    season_phrase: str  # "in the 2022-23 season". Can be simplified once we don't need to support partial MLB season anymore.
 
 
 @dataclass
@@ -65,3 +75,5 @@ class Game:
     is_complete: bool
     home_team_id: int
     away_team_id: int
+    season_period: SeasonPeriod
+    season_phrase: str

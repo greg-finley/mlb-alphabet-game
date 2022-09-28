@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import datetime
 import os
 from typing import Any
 
 import requests
-from my_types import Game, TweetablePlay, TwitterCredentials
+from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -23,8 +24,33 @@ class NHLClient(AbstractSportsClient):
         return "NHL"
 
     @property
-    def cycle_time_period(self) -> str:
-        return "in the 2022 preseason"
+    def season_period_override(self) -> str | None:
+        return None
+
+    @property
+    def preseason_name_override(self) -> str | None:
+        return None
+
+    @property
+    def season_year(self) -> str:
+        return str(
+            datetime.date.today().year
+            if datetime.date.today().month >= 7
+            else datetime.date.today().year - 1
+        )
+
+    @property
+    def season_years(self) -> str:
+        return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
+
+    def season_period(self, game_type_raw: str) -> SeasonPeriod:
+        if game_type_raw == "PR":
+            return SeasonPeriod.PRESEASON
+        elif game_type_raw == "R":
+            return SeasonPeriod.REGULAR_SEASON
+        elif game_type_raw == "P":
+            return SeasonPeriod.PLAYOFFS
+        raise ValueError(f"Unknown game type: {game_type_raw}")
 
     @property
     def team_to_hashtag(self) -> dict:
@@ -152,6 +178,7 @@ class NHLClient(AbstractSportsClient):
                                 end_time=p["about"]["dateTime"],
                                 tiebreaker=i,
                                 score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['about']['goals']['away']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['about']['goals']['home']}) {p['about']['ordinalNum']} {p['about']['periodTimeRemaining'] + ' remaining' if p['about']['periodTimeRemaining'] != '00:00' else ''}",
+                                season_period=g.season_period,
                             )
                         )
 
