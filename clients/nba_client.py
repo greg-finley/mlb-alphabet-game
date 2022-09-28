@@ -125,6 +125,41 @@ class NBAClient(AbstractSportsClient):
         }
 
     @property
+    def team_to_abbrevation(self) -> dict:
+        return {
+            1610612737: "ATL",
+            1610612738: "BOS",
+            1610612751: "BKN",
+            1610612766: "CHA",
+            1610612741: "CHI",
+            1610612739: "CLE",
+            1610612742: "DAL",
+            1610612743: "DEN",
+            1610612765: "DET",
+            1610612744: "GSW",
+            1610612745: "HOU",
+            1610612754: "IND",
+            1610612746: "LAC",
+            1610612747: "LAL",
+            1610612763: "MEM",
+            1610612748: "MIA",
+            1610612749: "MIL",
+            1610612750: "MIN",
+            1610612740: "NOP",
+            1610612752: "NYK",
+            1610612760: "OKC",
+            1610612753: "ORL",
+            1610612755: "PHI",
+            1610612756: "PHX",
+            1610612757: "POR",
+            1610612758: "SAC",
+            1610612759: "SAS",
+            1610612761: "TOR",
+            1610612762: "UTA",
+            1610612764: "WAS",
+        }
+
+    @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
             consumer_key=os.environ["NBA_TWITTER_CONSUMER_KEY"],
@@ -156,6 +191,8 @@ class NBAClient(AbstractSportsClient):
                     and (self.dry_run or play_id not in known_play_ids_for_this_game)
                 ):
                     player_id = p["personId"]
+                    period = self._period_to_string(p["period"])
+                    clock = self._clean_clock(p["clock"])
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
@@ -167,7 +204,7 @@ class NBAClient(AbstractSportsClient):
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
-                            score="",  # TODO
+                            score=f"{self.team_to_abbrevation[int(g.away_team_id)]} ({p['scoreAway']}) @ {self.team_to_abbrevation[int(g.home_team_id)]} ({p['scoreHome']}) {period} {clock}",
                         )
                     )
 
@@ -207,3 +244,26 @@ class NBAClient(AbstractSportsClient):
             if p[0] == player_id:
                 return p[2] + " " + p[1]
         raise Exception(f"Could not find player with id {player_id}")
+
+    def _period_to_string(self, period: int):
+        if period == 1:
+            return "1st"
+        elif period == 2:
+            return "2nd"
+        elif period == 3:
+            return "3rd"
+        elif period == 4:
+            return "4th"
+        elif period == 5:
+            return "OT"
+        else:
+            return f"{period - 4}OT"
+
+    def _clean_clock(self, clock: str) -> str:
+        """Change a time like PT06M40.00S to 06:40."""
+        return (
+            clock.replace("PT", "")
+            .replace("M", ":")
+            .replace("S", "")
+            .replace(".00", "")  # Remove milliseconds if they are all zeros
+        )

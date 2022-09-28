@@ -33,6 +33,11 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
+    def team_to_abbrevation(self) -> dict:
+        pass
+
+    @property
+    @abstractmethod
     def twitter_credentials(self) -> TwitterCredentials:
         pass
 

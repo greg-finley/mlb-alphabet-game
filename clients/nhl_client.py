@@ -64,6 +64,43 @@ class NHLClient(AbstractSportsClient):
         }
 
     @property
+    def team_to_abbrevation(self) -> dict:
+        return {
+            1: "NJD",
+            2: "NYI",
+            3: "NYR",
+            4: "PHI",
+            5: "PIT",
+            6: "BOS",
+            7: "BUF",
+            8: "MTL",
+            9: "OTT",
+            10: "TOR",
+            12: "CAR",
+            13: "CBJ",
+            14: "TBL",
+            15: "WSH",
+            16: "CHI",
+            17: "DET",
+            18: "NSH",
+            19: "STL",
+            20: "CGY",
+            21: "COL",
+            22: "EDM",
+            23: "VAN",
+            24: "DAL",
+            25: "WPG",
+            26: "LAK",
+            28: "SJS",
+            29: "CBJ",
+            30: "MIN",
+            52: "WPG",
+            53: "ARI",
+            54: "VGK",
+            55: "SEA",
+        }
+
+    @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
             consumer_key=os.environ["NHL_TWITTER_CONSUMER_KEY"],
@@ -89,13 +126,13 @@ class NHLClient(AbstractSportsClient):
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
-            for play in all_plays:
-                play_id = str(play["about"]["eventIdx"])
-                if play["result"]["event"] == "Goal" and (
+            for p in all_plays:
+                play_id = str(p["about"]["eventIdx"])
+                if p["result"]["event"] == "Goal" and (
                     self.dry_run or play_id not in known_play_ids_for_this_game
                 ):
                     scorer: Any = None
-                    for i, player in enumerate(play["players"]):
+                    for i, player in enumerate(p["players"]):
                         if player["playerType"] != "Scorer":
                             continue
                         else:
@@ -111,10 +148,10 @@ class NHLClient(AbstractSportsClient):
                                 tweet_phrase=self.short_tweet_phrase,
                                 player_name=scorer["player"]["fullName"],
                                 player_id=scorer["player"]["id"],
-                                player_team_id=play["team"]["id"],
-                                end_time=play["about"]["dateTime"],
+                                player_team_id=p["team"]["id"],
+                                end_time=p["about"]["dateTime"],
                                 tiebreaker=i,
-                                score="",  # TODO
+                                score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['about']['goals']['away']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['about']['goals']['home']}) {p['about']['ordinalNum']} {p['about']['periodTimeRemaining'] + ' remaining' if p['about']['periodTimeRemaining'] != '00:00' else ''}",
                             )
                         )
 
