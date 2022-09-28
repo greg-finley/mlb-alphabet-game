@@ -60,14 +60,21 @@ class AbstractSportsClient(ABC):
         "In case the tweet is too long, use something short"
         pass
 
-    @property
-    @abstractmethod
-    def preseason_name_override(self) -> str | None:
-        pass
-
     @abstractmethod
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         pass
+
+    # For NHL and NBA, overriden in MLB
+    def season_phrase(self, season_period: SeasonPeriod) -> str:
+        if season_period == SeasonPeriod.PRESEASON:
+            return f"in the {self.season_year} preseason"
+        elif season_period == SeasonPeriod.REGULAR_SEASON:
+            return f"in the {self.season_years} season"
+        elif season_period == SeasonPeriod.PLAYOFFS:
+            return f"in the {self.season_year} playoffs"
+        elif season_period == SeasonPeriod.PLAYIN:
+            return f"in the {self.season_year} play-in games"
+        raise ValueError(f"Unknown season period: {season_period}")
 
     # This is shared between MLB and NHL and overriden in NBA
     def get_current_games(self, completed_games: list[str]) -> list[Game]:

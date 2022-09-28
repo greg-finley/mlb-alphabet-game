@@ -28,10 +28,6 @@ class NHLClient(AbstractSportsClient):
         return None
 
     @property
-    def preseason_name_override(self) -> str | None:
-        return None
-
-    @property
     def season_year(self) -> str:
         return str(
             datetime.date.today().year
@@ -179,6 +175,7 @@ class NHLClient(AbstractSportsClient):
                                 tiebreaker=i,
                                 score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['about']['goals']['away']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['about']['goals']['home']}) {p['about']['ordinalNum']} {p['about']['periodTimeRemaining'] + ' remaining' if p['about']['periodTimeRemaining'] != '00:00' else ''}",
                                 season_period=g.season_period,
+                                season_phrase=self.season_phrase(g.season_period),
                             )
                         )
 

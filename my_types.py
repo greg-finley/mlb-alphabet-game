@@ -76,4 +76,3 @@ class Game:
     home_team_id: int
     away_team_id: int
     season_period: SeasonPeriod
-    season_phrase: str

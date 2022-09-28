@@ -60,10 +60,6 @@ class NBAClient(AbstractSportsClient):
         else:
             return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
 
-    @property
-    def preseason_name_override(self) -> str | None:
-        return None
-
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "1":
             return SeasonPeriod.PRESEASON
@@ -230,6 +226,7 @@ class NBAClient(AbstractSportsClient):
                             tiebreaker=0,  # Only one dunk per play
                             score=f"{self.team_to_abbrevation[int(g.away_team_id)]} ({p['scoreAway']}) @ {self.team_to_abbrevation[int(g.home_team_id)]} ({p['scoreHome']}) {period} {clock}",
                             season_period=g.season_period,
+                            season_phrase=self.season_phrase(g.season_period),
                         )
                     )
 
