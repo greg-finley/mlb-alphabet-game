@@ -108,7 +108,11 @@ class AbstractSportsClient(ABC):
         return games
 
     def get_team_twitter_hashtag(self, team_id: int) -> str:
-        return self.team_to_hashtag[team_id]
+        try:
+            return self.team_to_hashtag[team_id]
+        except KeyError:
+            print(f"Unknown hashtag for team id: {team_id}")
+            return ""
 
     @abstractmethod
     def get_player_picture(self, player_id: int) -> bytes:

@@ -187,6 +187,13 @@ class MLBClient(AbstractSportsClient):
                     else:
                         raise ValueError("Unexpected RBI value")
 
+                    # Maybe it's a preseason game against a college team or something, fall back to no score
+                    try:
+                        score = f"{self.team_to_abbrevation[g.away_team_id]} ({p['result']['awayScore']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['result']['homeScore']}) {'🔺' if p['about']['isTopInning'] else '🔻'}{p['about']['inning']}"
+                    except KeyError as e:
+                        print(f"Error getting score for game {g.game_id}: {e}")
+                        score = ""
+
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
@@ -200,7 +207,7 @@ class MLBClient(AbstractSportsClient):
                             else g.home_team_id,
                             tiebreaker=0,
                             end_time=p["about"]["endTime"],
-                            score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['result']['awayScore']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['result']['homeScore']}) {'🔺' if p['about']['isTopInning'] else '🔻'}{p['about']['inning']}",
+                            score=score,
                             season_period=g.season_period,
                             season_phrase=self.season_phrase(g.season_period),
                         )

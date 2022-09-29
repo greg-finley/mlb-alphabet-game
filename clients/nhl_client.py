@@ -162,6 +162,12 @@ class NHLClient(AbstractSportsClient):
                             break
 
                     if scorer:
+                        try:
+                            score = f"{self.team_to_abbrevation[g.away_team_id]} ({p['about']['goals']['away']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['about']['goals']['home']}) {p['about']['ordinalNum']} {p['about']['periodTimeRemaining'] + ' remaining' if p['about']['periodTimeRemaining'] != '00:00' else ''}"
+                        except KeyError as e:
+                            print(f"Error getting score for {g.game_id}: {e}")
+                            score = ""
+
                         tweetable_plays.append(
                             TweetablePlay(
                                 play_id=play_id,
@@ -173,7 +179,7 @@ class NHLClient(AbstractSportsClient):
                                 player_team_id=p["team"]["id"],
                                 end_time=p["about"]["dateTime"],
                                 tiebreaker=i,
-                                score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['about']['goals']['away']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['about']['goals']['home']}) {p['about']['ordinalNum']} {p['about']['periodTimeRemaining'] + ' remaining' if p['about']['periodTimeRemaining'] != '00:00' else ''}",
+                                score=score,
                                 season_period=g.season_period,
                                 season_phrase=self.season_phrase(g.season_period),
                             )

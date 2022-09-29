@@ -215,6 +215,13 @@ class NBAClient(AbstractSportsClient):
                     player_id = p["personId"]
                     period = self._period_to_string(p["period"])
                     clock = self._clean_clock(p["clock"])
+
+                    try:
+                        score = f"{self.team_to_abbrevation[int(g.away_team_id)]} ({p['scoreAway']}) @ {self.team_to_abbrevation[int(g.home_team_id)]} ({p['scoreHome']}) {period} {clock}"
+                    except KeyError as e:
+                        print(f"Error getting score for {g.game_id}: {e}")
+                        score = ""
+
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
@@ -226,7 +233,7 @@ class NBAClient(AbstractSportsClient):
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
-                            score=f"{self.team_to_abbrevation[int(g.away_team_id)]} ({p['scoreAway']}) @ {self.team_to_abbrevation[int(g.home_team_id)]} ({p['scoreHome']}) {period} {clock}",
+                            score=score,
                             season_period=g.season_period,
                             season_phrase=self.season_phrase(g.season_period),
                         )
