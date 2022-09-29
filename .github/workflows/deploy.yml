@@ -13,7 +13,7 @@ jobs:
     - id: 'install'
       run: poetry install --no-interaction --no-root
     - id: 'mypy'
-      run: poetry run mypy main.py
+      run: poetry run mypy .
     - id: 'test'
       run: poetry run pytest
 
