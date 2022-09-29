@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import datetime
 import os
 import random
 
 import requests
-from my_types import Game, TweetablePlay, TwitterCredentials
+from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -35,8 +36,36 @@ class MLBClient(AbstractSportsClient):
         return "Home Run"
 
     @property
-    def cycle_time_period(self) -> str:
+    def season_period_override(self) -> str | None:
         return "since Sept. 25, 2022"
+
+    @property
+    def season_year(self) -> str:
+        return str(datetime.date.today().year)
+
+    @property
+    def season_years(self) -> str:
+        # Irrelevant for baseball
+        raise NotImplementedError()
+
+    def season_period(self, game_type_raw: str) -> SeasonPeriod:
+        if game_type_raw == "S":
+            return SeasonPeriod.PRESEASON
+        # Treat the all-star game as part of the regular season
+        elif game_type_raw in ["R", "A"]:
+            return SeasonPeriod.REGULAR_SEASON
+        elif game_type_raw in ["F", "D", "L", "W"]:
+            return SeasonPeriod.PLAYOFFS
+        raise ValueError(f"Unexpected game type: {game_type_raw}")
+
+    def season_phrase(self, season_period: SeasonPeriod) -> str:
+        if season_period == SeasonPeriod.PRESEASON:
+            return f"during {self.season_year} spring training"
+        elif season_period == SeasonPeriod.REGULAR_SEASON:
+            return f"in the {self.season_year} season"
+        elif season_period == SeasonPeriod.PLAYOFFS:
+            return f"in the {self.season_year} playoffs"
+        raise ValueError(f"Unknown season period: {season_period}")
 
     @property
     def team_to_hashtag(self) -> dict:
@@ -71,6 +100,8 @@ class MLBClient(AbstractSportsClient):
             146: "#MakeItMiami",
             147: "#RepBX",
             158: "#ThisIsMyCrew",
+            159: "",
+            160: "",
         }
 
     @property
@@ -106,6 +137,8 @@ class MLBClient(AbstractSportsClient):
             146: "MIA",
             147: "NYY",
             158: "MIL",
+            159: "AL",
+            160: "NL",
         }
 
     @property
@@ -168,6 +201,8 @@ class MLBClient(AbstractSportsClient):
                             tiebreaker=0,
                             end_time=p["about"]["endTime"],
                             score=f"{self.team_to_abbrevation[g.away_team_id]} ({p['result']['awayScore']}) @ {self.team_to_abbrevation[g.home_team_id]} ({p['result']['homeScore']}) {'🔺' if p['about']['isTopInning'] else '🔻'}{p['about']['inning']}",
+                            season_period=g.season_period,
+                            season_phrase=self.season_phrase(g.season_period),
                         )
                     )
 

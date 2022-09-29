@@ -2,7 +2,7 @@ name: deploy
 on:
   push:
 jobs:
-  mypy:
+  test:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -13,11 +13,13 @@ jobs:
     - id: 'install'
       run: poetry install --no-interaction --no-root
     - id: 'mypy'
-      run: poetry run mypy main.py
+      run: poetry run mypy .
+    - id: 'test'
+      run: poetry run pytest
 
   deploy:
     runs-on: ubuntu-latest
-    needs: mypy
+    needs: test
     if: github.ref == 'refs/heads/main'
     permissions:
       contents: 'read'

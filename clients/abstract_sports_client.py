@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import datetime
 from abc import ABC, abstractmethod
 
 import requests
-from my_types import Game, TweetablePlay, TwitterCredentials
+from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 
 class AbstractSportsClient(ABC):
@@ -23,7 +25,18 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
-    def cycle_time_period(self) -> str:
+    def season_year(self) -> str:
+        pass
+
+    @property
+    @abstractmethod
+    def season_years(self) -> str:
+        """i.e. 2022-23"""
+        pass
+
+    @property
+    @abstractmethod
+    def season_period_override(self) -> str | None:
         pass
 
     @property
@@ -47,6 +60,23 @@ class AbstractSportsClient(ABC):
         "In case the tweet is too long, use something short"
         pass
 
+    @abstractmethod
+    def season_period(self, game_type_raw: str) -> SeasonPeriod:
+        pass
+
+    # For NHL and NBA, overriden in MLB
+    def season_phrase(self, season_period: SeasonPeriod) -> str:
+        if season_period == SeasonPeriod.PRESEASON:
+            return f"in the {self.season_year} preseason"
+        elif season_period == SeasonPeriod.REGULAR_SEASON:
+            return f"in the {self.season_years} season"
+        elif season_period == SeasonPeriod.PLAYOFFS:
+            return f"in the {self.season_year} playoffs"
+        elif season_period == SeasonPeriod.PLAYIN:
+            return f"in the {self.season_year} play-in games"
+        raise ValueError(f"Unknown season period: {season_period}")
+
+    # This is shared between MLB and NHL and overriden in NBA
     def get_current_games(self, completed_games: list[str]) -> list[Game]:
         # Fudge it by a day in either direction in case of timezone issues
         today = datetime.date.today()
@@ -72,6 +102,7 @@ class AbstractSportsClient(ABC):
                             is_complete=abstract_game_state == "Final",
                             home_team_id=g["teams"]["home"]["team"]["id"],
                             away_team_id=g["teams"]["away"]["team"]["id"],
+                            season_period=self.season_period(g["gameType"]),
                         )
                     )
         return games

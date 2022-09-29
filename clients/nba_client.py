@@ -5,7 +5,7 @@ import os
 import random
 
 import requests
-from my_types import Game, TweetablePlay, TwitterCredentials
+from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -32,26 +32,47 @@ class NBAClient(AbstractSportsClient):
         self.dry_run = dry_run
         self.research = research
         self.all_players: list = []  # Cache if we pulled it once
-        if self.research:
-            self.year = 2021
-            self.season = "2021-22"
-        else:
-            # if today is July or later, use last year else this year
-            self.year = (
-                datetime.date.today().year
-                if datetime.date.today().month >= 7
-                else datetime.date.today().year - 1
-            )
-            # Turn year 2022 into a string like 2022-23
-            self.season = f"{self.year}-{str(self.year + 1)[2:]}"
 
     @property
     def league_code(self) -> str:
         return "NBA"
 
     @property
-    def cycle_time_period(self) -> str:
-        return "in the 2022 preseason"
+    def season_period_override(self) -> str | None:
+        return None
+
+    @property
+    def season_year(self) -> str:
+        if self.research:
+            return "2021"
+        else:
+            # if today is July or later, use last year else this year
+            return str(
+                datetime.date.today().year
+                if datetime.date.today().month >= 7
+                else datetime.date.today().year - 1
+            )
+
+    @property
+    def season_years(self) -> str:
+        if self.research:
+            return "2021-22"
+        else:
+            return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
+
+    def season_period(self, game_type_raw: str) -> SeasonPeriod:
+        if game_type_raw == "1":
+            return SeasonPeriod.PRESEASON
+        # 2 = regular season, 3 = all-star game; treat the all-star game as part of the regular season
+        elif game_type_raw in ["2", "3"]:
+            return SeasonPeriod.REGULAR_SEASON
+        elif game_type_raw == "4":
+            return SeasonPeriod.PLAYOFFS
+        elif game_type_raw == "5":
+            return SeasonPeriod.PLAYIN
+        print("!!!")
+        print(f"{type(game_type_raw)=}")
+        raise ValueError(f"Unknown game type {game_type_raw}")
 
     @property
     def alphabet_game_name(self) -> str:
@@ -69,7 +90,7 @@ class NBAClient(AbstractSportsClient):
             today_str = today.strftime("%Y-%m-%d")
 
         all_games = requests.get(
-            f"https://data.nba.net/prod/v1/{self.year}/schedule.json"
+            f"https://data.nba.net/prod/v1/{self.season_year}/schedule.json"
         ).json()["league"]["standard"]
 
         games = []
@@ -85,6 +106,7 @@ class NBAClient(AbstractSportsClient):
                         is_complete=g["statusNum"] == 3,
                         home_team_id=g["hTeam"]["teamId"],
                         away_team_id=g["vTeam"]["teamId"],
+                        season_period=self.season_period(str(g["seasonStageId"])),
                     )
                 )
         return games
@@ -205,6 +227,8 @@ class NBAClient(AbstractSportsClient):
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
                             score=f"{self.team_to_abbrevation[int(g.away_team_id)]} ({p['scoreAway']}) @ {self.team_to_abbrevation[int(g.home_team_id)]} ({p['scoreHome']}) {period} {clock}",
+                            season_period=g.season_period,
+                            season_phrase=self.season_phrase(g.season_period),
                         )
                     )
 
@@ -230,7 +254,7 @@ class NBAClient(AbstractSportsClient):
         """
         if not self.all_players:
             all_players = requests.get(
-                f"https://stats.nba.com/stats/playerindex?College=&Country=&DraftPick=&DraftRound=&DraftYear=&Height=&Historical=1&LeagueID=00&Season={self.season}&SeasonType=Regular%20Season&TeamID=0&Weight=",
+                f"https://stats.nba.com/stats/playerindex?College=&Country=&DraftPick=&DraftRound=&DraftYear=&Height=&Historical=1&LeagueID=00&Season={self.season_years}&SeasonType=Regular%20Season&TeamID=0&Weight=",
                 headers={
                     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
                     "Origin": "https://www.nba.com",

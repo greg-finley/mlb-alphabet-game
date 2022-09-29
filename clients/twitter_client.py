@@ -133,4 +133,4 @@ class TwitterClient:
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
 
-We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {self.sports_client.cycle_time_period}.{score}"""
+We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {self.sports_client.season_period_override or tweetable_play.season_phrase}.{score}"""
