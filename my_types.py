@@ -27,6 +27,8 @@ class State:
     initial_current_letter: str
     times_cycled: int
     initial_times_cycled: int
+    season: str
+    initial_season: str
 
     @property
     def next_letter(self) -> str:

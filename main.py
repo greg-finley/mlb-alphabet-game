@@ -10,6 +10,7 @@ from clients.mlb_client import MLBClient
 from clients.nba_client import NBAClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
+from my_types import Game, SeasonPeriod, State
 
 load_dotenv()
 
@@ -35,15 +36,16 @@ def main(sports_client: AbstractSportsClient):
     state = bigquery_client.get_initial_state()
     print(state)
 
-    # TODO: Determine whether to update the season state and filter out any preseason games if the regular season has started
-    raise NotImplementedError()
+    # Side effect of updating the state if season period changes
+    relevant_games = check_for_season_period_change(state, games)
 
     known_play_ids = bigquery_client.get_known_play_ids()
-    tweetable_plays = sports_client.get_tweetable_plays(games, known_play_ids)
+    tweetable_plays = sports_client.get_tweetable_plays(relevant_games, known_play_ids)
 
     if not tweetable_plays:
         print("No new Tweetable plays")
         bigquery_client.set_completed_games(games)
+        bigquery_client.update_state(state)
         return
 
     for p in tweetable_plays:
@@ -64,6 +66,95 @@ def main(sports_client: AbstractSportsClient):
     bigquery_client.update_state(state)
     bigquery_client.add_tweetable_plays(tweetable_plays)
     bigquery_client.set_completed_games(games)
+
+
+def check_for_season_period_change(state: State, games: list[Game]) -> list[Game]:
+    season_periods: set[SeasonPeriod] = set()
+    for g in games:
+        season_periods.add(g.season_period)
+
+    has_preseason = SeasonPeriod.PRESEASON in season_periods
+    has_regular_season = SeasonPeriod.REGULAR_SEASON in season_periods
+    has_playin = SeasonPeriod.PLAYIN in season_periods
+    has_playoffs = SeasonPeriod.PLAYOFFS in season_periods
+
+    if len(season_periods) > 2:
+        print(
+            f"{state.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
+        )
+        raise ValueError("Found more than 2 season periods in the same set of games")
+
+    # If we only have one season period and it matches the state, return all games
+    if len(season_periods) == 1:
+        if has_preseason and state.season == SeasonPeriod.PRESEASON.value:
+            return games
+        if has_regular_season and state.season == SeasonPeriod.REGULAR_SEASON.value:
+            return games
+        if has_playin and state.season == SeasonPeriod.PLAYIN.value:
+            return games
+        if has_playoffs and state.season == SeasonPeriod.PLAYOFFS.value:
+            return games
+        print(
+            f"{state.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
+        )
+        raise ValueError("Unexpected outcome")
+    # If we think it's preseason and we see season games, reset the state and filter out any remaining preseason games
+    if (
+        state.season == SeasonPeriod.PRESEASON.value
+        and has_regular_season
+        and not has_playin
+        and not has_playoffs
+    ):
+        state.season = SeasonPeriod.REGULAR_SEASON.value
+        state.current_letter = "A"
+        state.times_cycled = 0
+        return [g for g in games if g.season_period == SeasonPeriod.REGULAR_SEASON]
+    # If we think it's regular season and we see playin games, reset the state and filter out any remaining regular season games
+    elif (
+        state.season == SeasonPeriod.REGULAR_SEASON.value
+        and has_playin
+        and not has_playoffs
+        and not has_preseason
+    ):
+        state.season = SeasonPeriod.PLAYIN.value
+        state.current_letter = "A"
+        state.times_cycled = 0
+        return [g for g in games if g.season_period == SeasonPeriod.PLAYIN]
+    # If we think it's regular season and we see playoff games, reset the state and filter out any remaining regular season games
+    elif (
+        state.season == SeasonPeriod.REGULAR_SEASON.value
+        and has_playoffs
+        and not has_playin
+        and not has_preseason
+    ):
+        state.season = SeasonPeriod.PLAYOFFS.value
+        state.current_letter = "A"
+        state.times_cycled = 0
+        return [g for g in games if g.season_period == SeasonPeriod.PLAYOFFS]
+    # If we think it's the playin games and we see playoff games, reset the state and filter out any remaining playin games
+    elif (
+        state.season == SeasonPeriod.PLAYIN.value
+        and has_playoffs
+        and not has_regular_season
+        and not has_preseason
+    ):
+        state.season = SeasonPeriod.PLAYOFFS.value
+        state.current_letter = "A"
+        state.times_cycled = 0
+        return [g for g in games if g.season_period == SeasonPeriod.PLAYOFFS]
+    # If we think it's the regular season but we see preseason games (happens in baseball), just ignore the preseason games
+    elif (
+        state.season == SeasonPeriod.REGULAR_SEASON.value
+        and has_preseason
+        and not has_playin
+        and not has_playoffs
+    ):
+        return [g for g in games if g.season_period == SeasonPeriod.REGULAR_SEASON]
+    else:
+        print(
+            f"{state.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
+        )
+        raise ValueError("Unexpected season period change")
 
 
 def main_mlb():
