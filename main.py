@@ -94,10 +94,6 @@ def check_for_season_period_change(state: State, games: list[Game]) -> list[Game
             return games
         if has_playoffs and state.season == SeasonPeriod.PLAYOFFS.value:
             return games
-        print(
-            f"{state.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
-        )
-        raise ValueError("Unexpected outcome")
     # If we think it's preseason and we see season games, reset the state and filter out any remaining preseason games
     if (
         state.season == SeasonPeriod.PRESEASON.value
