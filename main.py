@@ -142,6 +142,18 @@ def check_for_season_period_change(state: State, games: list[Game]) -> list[Game
         state.current_letter = "A"
         state.times_cycled = 0
         return [g for g in games if g.season_period == SeasonPeriod.PLAYOFFS]
+    # If we think it's the playoffs but we see preseason games, it must be the preseason again
+    elif (
+        state.season == SeasonPeriod.PLAYOFFS.value
+        and has_preseason
+        and not has_regular_season
+        and not has_playin
+        and not has_playoffs
+    ):
+        state.season = SeasonPeriod.PRESEASON.value
+        state.current_letter = "A"
+        state.times_cycled = 0
+        return [g for g in games if g.season_period == SeasonPeriod.PRESEASON]
     # If we think it's the regular season but we see preseason games (happens in baseball), just ignore the preseason games
     elif (
         state.season == SeasonPeriod.REGULAR_SEASON.value
