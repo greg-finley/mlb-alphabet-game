@@ -100,6 +100,8 @@ class MLBClient(AbstractSportsClient):
             146: "#MakeItMiami",
             147: "#RepBX",
             158: "#ThisIsMyCrew",
+            159: "",
+            160: "",
         }
 
     @property
@@ -135,6 +137,8 @@ class MLBClient(AbstractSportsClient):
             146: "MIA",
             147: "NYY",
             158: "MIL",
+            159: "AL",
+            160: "NL",
         }
 
     @property
