@@ -64,12 +64,14 @@ class NBAClient(AbstractSportsClient):
         if game_type_raw == "1":
             return SeasonPeriod.PRESEASON
         # 2 = regular season, 3 = all-star game; treat the all-star game as part of the regular season
-        elif game_type_raw == ["2", "3"]:
+        elif game_type_raw in ["2", "3"]:
             return SeasonPeriod.REGULAR_SEASON
         elif game_type_raw == "4":
             return SeasonPeriod.PLAYOFFS
         elif game_type_raw == "5":
             return SeasonPeriod.PLAYIN
+        print("!!!")
+        print(f"{type(game_type_raw)=}")
         raise ValueError(f"Unknown game type {game_type_raw}")
 
     @property

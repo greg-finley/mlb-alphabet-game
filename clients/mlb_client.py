@@ -52,7 +52,7 @@ class MLBClient(AbstractSportsClient):
         if game_type_raw == "S":
             return SeasonPeriod.PRESEASON
         # Treat the all-star game as part of the regular season
-        elif game_type_raw == ["R", "A"]:
+        elif game_type_raw in ["R", "A"]:
             return SeasonPeriod.REGULAR_SEASON
         elif game_type_raw in ["F", "D", "L", "W"]:
             return SeasonPeriod.PLAYOFFS
