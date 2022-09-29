@@ -129,7 +129,6 @@ class TwitterClient:
         else:
             score = self._score_with_spacing(tweetable_play.score)
 
-        # TODO: Need to put like "2022-23 season" or "2022 season"
         return f"""{alert}{tweetable_play.player_name} just {tweet_phrase}! {self.sports_client.get_team_twitter_hashtag(tweetable_play.player_team_id)}
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
