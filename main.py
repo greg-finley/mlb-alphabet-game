@@ -85,4 +85,4 @@ def main_nba(research=False):
 def run(event, context):
     main_mlb()
     main_nhl()
-    main_nba(research=False)
+    # main_nba(research=False)
