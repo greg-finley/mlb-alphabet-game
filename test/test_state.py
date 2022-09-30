@@ -1,5 +1,4 @@
 import pytest
-from main import check_for_season_period_change
 from my_types import Game, SeasonPeriod, State
 
 
@@ -107,7 +106,7 @@ def test_check_for_season_period_change(
             )
         )
 
-    filtered_games = check_for_season_period_change(state, games)
+    filtered_games = state.check_for_season_period_change(games)
 
     assert [g.season_period for g in filtered_games] == expected_game_seasons
 
@@ -172,4 +171,4 @@ def test_check_for_season_period_change_error(
         )
 
     with pytest.raises(ValueError):
-        check_for_season_period_change(state, games)
+        state.check_for_season_period_change(games)
