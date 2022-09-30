@@ -9,20 +9,17 @@ from clients.abstract_sports_client import AbstractSportsClient
 class BigQueryClient:
     def __init__(self, dry_run: bool, sports_client: AbstractSportsClient) -> None:
         self.client = bigquery.Client()
-        self.dry_run = dry_run
+        self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
 
     def get_recently_completed_games(self) -> list[str]:
-        if self.dry_run:
-            return []
         query = f"""
             SELECT game_id
             FROM mlb_alphabet_game.completed_games
             where sport = '{self.league_code}'
             order by completed_at desc limit 100
         """
-        query_job = self.client.query(query)
-        results = query_job.result()
+        results = self.client.query(query, job_config=self.job_config).result()
         game_ids = [r.game_id for r in results]
         return game_ids
 
@@ -43,23 +40,19 @@ class BigQueryClient:
             q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
         q = q[:-1]  # remove trailing comma
         print(q)
-        if not self.dry_run:
-            self.client.query(q).result()
+        self.client.query(q, job_config=self.job_config).result()
 
     def get_known_play_ids(self) -> dict[str, list[str]]:
         """
         In prior runs, we should record which plays we've already processed.
         """
-        if self.dry_run:
-            return {}
         query = f"""
                 SELECT game_id, play_id
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 order by completed_at desc limit 5000
             """
-        query_job = self.client.query(query)
-        results = query_job.result()
+        results = self.client.query(query, job_config=self.job_config).result()
         known_play_ids: dict[str, list[str]] = {}
         for r in results:
             if r.game_id not in known_play_ids:
@@ -79,7 +72,6 @@ class BigQueryClient:
                 deduped_tweetable_plays.append(deduped_play)
 
         q = """
-
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at)
             VALUES
         """
@@ -87,10 +79,10 @@ class BigQueryClient:
             q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
         q = q[:-1]  # remove trailing comma
         print(q)
-        if not self.dry_run:
-            self.client.query(q).result()
+        self.client.query(q, job_config=self.job_config).result()
 
     def get_initial_state(self) -> State:
+        # Always get the real state, even in dry run mode
         rows = self.client.query(
             f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
         )
@@ -109,5 +101,4 @@ class BigQueryClient:
             return
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}' WHERE sport='{self.league_code}';"
         print(q)
-        if not self.dry_run:
-            self.client.query(q).result()
+        self.client.query(q, job_config=self.job_config).result()
