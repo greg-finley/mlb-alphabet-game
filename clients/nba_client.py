@@ -236,23 +236,19 @@ class NBAClient(AbstractSportsClient):
         Ideally better to grab the name directly by id instead of getting this
         huge list, but I couldn't find such an endpoint.
         """
+        player_id_str = str(player_id)
         if not self.all_players:
             print("Starting get all players")
             all_players = requests.get(
-                f"https://stats.nba.com/stats/playerindex?College=&Country=&DraftPick=&DraftRound=&DraftYear=&Height=&Historical=1&LeagueID=00&Season={self.season_years}&SeasonType=Regular%20Season&TeamID=0&Weight=",
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-                    "Origin": "https://www.nba.com",
-                    "Referer": "https://www.nba.com/",
-                },
-            ).json()["resultSets"][0]["rowSet"]
+                f"https://data.nba.net/prod/v1/{self.season_year}/players.json"
+            ).json()["league"]["standard"]
             self.all_players = all_players
             print("Got all players")
         else:
             all_players = self.all_players
         for p in all_players:
-            if p[0] == player_id:
-                return p[2] + " " + p[1]
+            if p["personId"] == player_id_str:
+                return p["firstName"] + " " + p["lastName"]
         raise Exception(f"Could not find player with id {player_id}")
 
     def _period_to_string(self, period: int):
