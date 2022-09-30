@@ -23,16 +23,19 @@ class AbstractSportsClient(ABC):
     def alphabet_game_name(self) -> str:
         pass
 
+    # Override for MLB
     @property
-    @abstractmethod
     def season_year(self) -> str:
-        pass
+        return str(
+            datetime.date.today().year
+            if datetime.date.today().month >= 7
+            else datetime.date.today().year - 1
+        )
 
+    # Override for MLB
     @property
-    @abstractmethod
     def season_years(self) -> str:
-        """i.e. 2022-23"""
-        pass
+        return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
 
     @property
     @abstractmethod

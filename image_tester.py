@@ -8,7 +8,7 @@ image_client = ImageClient()
 mlb = (MLBClient(dry_run=True), "Charlie Blackmon", 453568, "2-Run Home Run")
 nhl = (NHLClient(dry_run=True), "Nathan MacKinnon", 8477492, "Goal")
 nba = (
-    NBAClient(dry_run=True, research=True),
+    NBAClient(dry_run=True),
     "Montrezl Harrell",
     1626149,
     "Slam Dunk",

@@ -75,9 +75,9 @@ def main_nhl():
     print("Ending NHL")
 
 
-def main_nba(research=False):
+def main_nba():
     print("Starting NBA")
-    nba_client = NBAClient(dry_run=DRY_RUN, research=research)
+    nba_client = NBAClient(dry_run=DRY_RUN)
     main(nba_client)
     print("Ending NBA")
 
@@ -85,4 +85,4 @@ def main_nba(research=False):
 def run(event, context):
     main_mlb()
     main_nhl()
-    # main_nba(research=False)
+    # main_nba()

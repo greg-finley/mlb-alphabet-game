@@ -28,9 +28,8 @@ NBA_JAM_DUNK_PHRASES: list[str] = [
 
 
 class NBAClient(AbstractSportsClient):
-    def __init__(self, dry_run: bool, research: bool = False):
+    def __init__(self, dry_run: bool):
         self.dry_run = dry_run
-        self.research = research
         self.all_players: list = []  # Cache if we pulled it once
 
     @property
@@ -40,25 +39,6 @@ class NBAClient(AbstractSportsClient):
     @property
     def season_period_override(self) -> str | None:
         return None
-
-    @property
-    def season_year(self) -> str:
-        if self.research:
-            return "2021"
-        else:
-            # if today is July or later, use last year else this year
-            return str(
-                datetime.date.today().year
-                if datetime.date.today().month >= 7
-                else datetime.date.today().year - 1
-            )
-
-    @property
-    def season_years(self) -> str:
-        if self.research:
-            return "2021-22"
-        else:
-            return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
 
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "1":
@@ -79,15 +59,10 @@ class NBAClient(AbstractSportsClient):
         return "Slam Dunk"
 
     def get_current_games(self, completed_games: list[str]) -> list[Game]:
-        if self.research:
-            yesterday_str = "2021-12-24"
-            today_str = "2021-12-25"
-            tomorrow_str = "2021-12-26"
-        else:
-            today = datetime.date.today()
-            yesterday_str = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-            tomorrow_str = (today + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-            today_str = today.strftime("%Y-%m-%d")
+        today = datetime.date.today()
+        yesterday_str = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        tomorrow_str = (today + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+        today_str = today.strftime("%Y-%m-%d")
 
         all_games = requests.get(
             f"https://data.nba.net/prod/v1/{self.season_year}/schedule.json"

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import os
 from typing import Any
 
@@ -26,18 +25,6 @@ class NHLClient(AbstractSportsClient):
     @property
     def season_period_override(self) -> str | None:
         return None
-
-    @property
-    def season_year(self) -> str:
-        return str(
-            datetime.date.today().year
-            if datetime.date.today().month >= 7
-            else datetime.date.today().year - 1
-        )
-
-    @property
-    def season_years(self) -> str:
-        return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
 
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "PR":
