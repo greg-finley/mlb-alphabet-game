@@ -202,9 +202,11 @@ class NBAClient(AbstractSportsClient):
 
         for g in games:
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
+            print("Getting all plays")
             all_plays = requests.get(
                 f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
             ).json()["game"]["actions"]
+            print("Got all plays")
             for p in all_plays:
                 play_id = str(p["actionNumber"])
                 if (
@@ -260,6 +262,7 @@ class NBAClient(AbstractSportsClient):
         huge list, but I couldn't find such an endpoint.
         """
         if not self.all_players:
+            print("Starting get all players")
             all_players = requests.get(
                 f"https://stats.nba.com/stats/playerindex?College=&Country=&DraftPick=&DraftRound=&DraftYear=&Height=&Historical=1&LeagueID=00&Season={self.season_years}&SeasonType=Regular%20Season&TeamID=0&Weight=",
                 headers={
@@ -269,6 +272,7 @@ class NBAClient(AbstractSportsClient):
                 },
             ).json()["resultSets"][0]["rowSet"]
             self.all_players = all_players
+            print("Got all players")
         else:
             all_players = self.all_players
         for p in all_players:

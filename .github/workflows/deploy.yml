@@ -39,7 +39,7 @@ jobs:
         name: 'projects/greg-finley/locations/us-central1/functions/mlb-alphabet-game'
         runtime: 'python310'
         entry_point: 'run'
-        memory_mb: 512
+        memory_mb: 1024
         secret_environment_variables: 'MLB_TWITTER_ACCESS_SECRET=projects/greg-finley/secrets/MLB_TWITTER_ACCESS_SECRET/versions/latest,MLB_TWITTER_ACCESS_TOKEN=projects/greg-finley/secrets/MLB_TWITTER_ACCESS_TOKEN/versions/latest, MLB_TWITTER_CONSUMER_KEY=projects/greg-finley/secrets/MLB_TWITTER_CONSUMER_KEY/versions/latest, MLB_TWITTER_CONSUMER_SECRET=projects/greg-finley/secrets/MLB_TWITTER_CONSUMER_SECRET/versions/latest, NHL_TWITTER_ACCESS_SECRET=projects/greg-finley/secrets/NHL_TWITTER_ACCESS_SECRET/versions/latest,NHL_TWITTER_ACCESS_TOKEN=projects/greg-finley/secrets/NHL_TWITTER_ACCESS_TOKEN/versions/latest, NHL_TWITTER_CONSUMER_KEY=projects/greg-finley/secrets/NHL_TWITTER_CONSUMER_KEY/versions/latest, NHL_TWITTER_CONSUMER_SECRET=projects/greg-finley/secrets/NHL_TWITTER_CONSUMER_SECRET/versions/latest, NBA_TWITTER_ACCESS_SECRET=projects/greg-finley/secrets/NBA_TWITTER_ACCESS_SECRET/versions/latest,NBA_TWITTER_ACCESS_TOKEN=projects/greg-finley/secrets/NBA_TWITTER_ACCESS_TOKEN/versions/latest, NBA_TWITTER_CONSUMER_KEY=projects/greg-finley/secrets/NBA_TWITTER_CONSUMER_KEY/versions/latest, NBA_TWITTER_CONSUMER_SECRET=projects/greg-finley/secrets/NBA_TWITTER_CONSUMER_SECRET/versions/latest'
         timeout: 120
         event_trigger_type: 'providers/cloud.pubsub/eventTypes/topic.publish'
