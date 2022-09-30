@@ -112,10 +112,10 @@ class NHLClient(AbstractSportsClient):
     @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
-            consumer_key=os.environ["NHL_TWITTER_CONSUMER_KEY"],
-            consumer_secret=os.environ["NHL_TWITTER_CONSUMER_SECRET"],
-            access_token=os.environ["NHL_TWITTER_ACCESS_TOKEN"],
-            access_token_secret=os.environ["NHL_TWITTER_ACCESS_SECRET"],
+            consumer_key=os.environ.get("NHL_TWITTER_CONSUMER_KEY", ""),
+            consumer_secret=os.environ.get("NHL_TWITTER_CONSUMER_SECRET", ""),
+            access_token=os.environ.get("NHL_TWITTER_ACCESS_TOKEN", ""),
+            access_token_secret=os.environ.get("NHL_TWITTER_ACCESS_SECRET", ""),
         )
 
     @property
