@@ -144,10 +144,10 @@ class MLBClient(AbstractSportsClient):
     @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
-            consumer_key=os.environ["MLB_TWITTER_CONSUMER_KEY"],
-            consumer_secret=os.environ["MLB_TWITTER_CONSUMER_SECRET"],
-            access_token=os.environ["MLB_TWITTER_ACCESS_TOKEN"],
-            access_token_secret=os.environ["MLB_TWITTER_ACCESS_SECRET"],
+            consumer_key=os.environ.get("MLB_TWITTER_CONSUMER_KEY", ""),
+            consumer_secret=os.environ.get("MLB_TWITTER_CONSUMER_SECRET", ""),
+            access_token=os.environ.get("MLB_TWITTER_ACCESS_TOKEN", ""),
+            access_token_secret=os.environ.get("MLB_TWITTER_ACCESS_SECRET", ""),
         )
 
     @property

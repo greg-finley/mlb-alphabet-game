@@ -6,6 +6,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v0'
+      with:
+        credentials_json: '${{ secrets.gcp_credentials }}'
     - uses: actions/setup-python@v2
       with:
         python-version: 3.9.12
@@ -16,6 +20,12 @@ jobs:
       run: poetry run mypy .
     - id: 'test'
       run: poetry run pytest
+    - id: 'dry-mlb'
+      run: DRY_RUN=True poetry run python mlb_dryrun.py
+    - id: 'dry-nhl'
+      run: DRY_RUN=True poetry run python nhl_dryrun.py
+    - id: 'dry-nba'
+      run: DRY_RUN=True poetry run python nba_dryrun.py
 
   deploy:
     runs-on: ubuntu-latest
