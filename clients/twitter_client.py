@@ -8,7 +8,7 @@ from my_types import ImageInput, State, TweetablePlay
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.image_client import ImageClient
 
-SAD_EMOJIS = ["😭", "😢", "❌", "😔", "😮‍💨"]
+SAD_EMOJIS = ["😭", "😢", "❌", "😔"]
 
 SAD_PHRASES = ["Darn", "Drats", "Oh shoot", "Oh no", "Bad luck", "Bummer", "Sigh"]
 
