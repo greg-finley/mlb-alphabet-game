@@ -136,7 +136,7 @@ class NHLClient(AbstractSportsClient):
             ).json()["allPlays"]
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
             for p in all_plays:
-                play_id = str(p["about"]["eventIdx"])
+                play_id = str(p["about"]["eventId"])
                 if p["result"]["event"] == "Goal" and (
                     self.dry_run or play_id not in known_play_ids_for_this_game
                 ):
