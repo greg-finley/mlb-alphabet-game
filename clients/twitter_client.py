@@ -1,10 +1,16 @@
 from __future__ import annotations
 
+import random
+
 import tweepy  # type: ignore
 from my_types import ImageInput, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.image_client import ImageClient
+
+SAD_EMOJIS = ["😭", "😢", "❌", "😔"]
+
+SAD_PHRASES = ["Darn", "Drats", "Oh shoot", "Oh no", "Bad luck"]
 
 
 class TwitterClient:
@@ -21,7 +27,7 @@ class TwitterClient:
         self.sports_client = sports_client
         self.dry_run = dry_run
 
-    def tweet(
+    def tweet_matched(
         self, tweetable_play: TweetablePlay, state: State, matching_letters: list[str]
     ) -> None:
         alert = self._alert(matching_letters)
@@ -59,10 +65,25 @@ class TwitterClient:
                     sports_client=self.sports_client,
                 ),
             )
-            self.api.update_status(
+            tweet = self.api.update_status(
                 status=tweet_text,
                 media_ids=[media.media_id],
             )
+            state.tweet_id = tweet.id
+
+    def tweet_unmatched(self, tweetable_play: TweetablePlay, state: State) -> None:
+        if state.tweet_id or self.dry_run:
+            status = f"{random.choice(SAD_EMOJIS)} {random.choice(SAD_PHRASES)}. {tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._score_with_spacing(tweetable_play.score)}"
+            print(status)
+            if not self.dry_run:
+                tweet = self.api.update_status(
+                    status=status,
+                    in_reply_to_status_id=state.tweet_id,
+                )
+                state.tweet_id = tweet.id
+            else:
+                # Increment the tweet_id to test the BQ logic
+                state.tweet_id += 1
 
     def _alert(self, matching_letters: list[str]) -> str:
         if len(matching_letters) == 1:

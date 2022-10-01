@@ -93,6 +93,8 @@ def test_check_for_season_period_change(
         initial_current_letter="Y",
         initial_times_cycled=2,
         initial_season=current_season.value,
+        tweet_id=0,
+        initial_tweet_id=0,
     )
     games: list[Game] = []
     for s in game_seasons:
@@ -157,6 +159,8 @@ def test_check_for_season_period_change_error(
         initial_current_letter="Y",
         initial_times_cycled=2,
         initial_season=current_season.value,
+        tweet_id=0,
+        initial_tweet_id=0,
     )
     games: list[Game] = []
     for s in game_seasons:
