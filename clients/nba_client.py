@@ -9,6 +9,11 @@ from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
+
+class UnknownPlayerError(Exception):
+    pass
+
+
 NBA_JAM_DUNK_PHRASES: list[str] = [
     "Hey come on, the rim has feelings too",
     "He's on fire",
@@ -199,6 +204,11 @@ class NBAClient(AbstractSportsClient):
                         print(f"Error getting score for {g.game_id}: {e}")
                         score = ""
 
+                    try:
+                        player_name = self._get_player_name(player_id)
+                    except UnknownPlayerError:
+                        continue
+
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
@@ -206,7 +216,7 @@ class NBAClient(AbstractSportsClient):
                             end_time=p["timeActual"],
                             image_name="Slam Dunk",
                             tweet_phrase=f"dunked. {random.choice(NBA_JAM_DUNK_PHRASES)}",
-                            player_name=self._get_player_name(player_id),
+                            player_name=player_name,
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
@@ -249,7 +259,7 @@ class NBAClient(AbstractSportsClient):
         for p in all_players:
             if p["personId"] == player_id_str:
                 return p["firstName"] + " " + p["lastName"]
-        raise Exception(f"Could not find player with id {player_id}")
+        raise UnknownPlayerError(f"Could not find player with id {player_id}")
 
     def _period_to_string(self, period: int):
         if period == 1:

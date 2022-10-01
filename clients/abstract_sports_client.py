@@ -28,7 +28,7 @@ class AbstractSportsClient(ABC):
     def season_year(self) -> str:
         return str(
             datetime.date.today().year
-            if datetime.date.today().month >= 7
+            if datetime.date.today().month >= 8
             else datetime.date.today().year - 1
         )
 
