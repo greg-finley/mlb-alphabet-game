@@ -46,6 +46,7 @@ class BigQueryClient:
         """
         In prior runs, we should record which plays we've already processed.
         """
+        # Should never hit this path without games, but if so there are no plays
         if not games:
             return {}
         query = f"""
