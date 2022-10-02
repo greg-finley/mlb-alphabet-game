@@ -183,9 +183,13 @@ class NBAClient(AbstractSportsClient):
         for g in games:
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
             print("Getting all plays")
-            all_plays = requests.get(
-                f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
-            ).json()["game"]["actions"]
+            try:
+                all_plays = requests.get(
+                    f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
+                ).json()["game"]["actions"]
+            # Sometimes the game says period 1 but it hasn't truly started yet
+            except requests.JSONDecodeError:
+                continue
             print("Got all plays")
             for p in all_plays:
                 play_id = str(p["actionNumber"])
