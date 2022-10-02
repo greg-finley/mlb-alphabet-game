@@ -76,7 +76,7 @@ class NBAClient(AbstractSportsClient):
         games = []
         for g in all_games:
             if (
-                g["statusNum"] > 1
+                g["period"]["current"] > 0
                 and g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
                 and g["gameId"] not in completed_games
             ):
