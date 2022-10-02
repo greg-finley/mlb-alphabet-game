@@ -42,16 +42,19 @@ class BigQueryClient:
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
-    def get_known_play_ids(self) -> dict[str, list[str]]:
+    def get_known_play_ids(self, games: list[Game]) -> dict[str, list[str]]:
         """
         In prior runs, we should record which plays we've already processed.
         """
+        if not games:
+            return {}
         query = f"""
                 SELECT game_id, play_id
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
-                order by completed_at desc limit 5000
+                and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
             """
+        print(query)
         results = self.client.query(query, job_config=self.job_config).result()
         known_play_ids: dict[str, list[str]] = {}
         for r in results:

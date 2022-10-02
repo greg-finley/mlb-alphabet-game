@@ -38,7 +38,7 @@ def main(sports_client: AbstractSportsClient):
     # Side effect of updating the state if season period changes
     relevant_games = state.check_for_season_period_change(games)
 
-    known_play_ids = bigquery_client.get_known_play_ids()
+    known_play_ids = bigquery_client.get_known_play_ids(relevant_games)
     tweetable_plays = sports_client.get_tweetable_plays(relevant_games, known_play_ids)
 
     if not tweetable_plays:
