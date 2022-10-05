@@ -51,9 +51,8 @@ class NFLClient(AbstractSportsClient):
 
     def get_current_games(self, completed_games: list[str]) -> list[Game]:
 
-        # TODO: Remove week=4
         all_games = requests.get(
-            "http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=4"
+            "http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
         ).json()["events"]
 
         games: list[Game] = []
