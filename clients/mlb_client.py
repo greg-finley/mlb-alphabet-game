@@ -170,7 +170,7 @@ class MLBClient(AbstractSportsClient):
                 if (
                     p["about"]["isComplete"]
                     and p["result"]["eventType"] == "home_run"
-                    and (self.dry_run or play_id not in known_play_ids_for_this_game)
+                    and play_id not in known_play_ids_for_this_game
                 ):
                     if p["result"]["rbi"] == 1:
                         image_name = "Solo Home Run"

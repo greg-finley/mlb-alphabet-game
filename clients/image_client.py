@@ -49,7 +49,7 @@ class ImageClient:
                     HEIGHT,
                 )
             )
-        elif sports_client.league_code == "NBA":
+        elif sports_client.league_code in ["NBA", "NFL"]:
             # Resize to 1000 pixels tall
             player_img = player_img.convert("RGBA")
             player_img = player_img.resize(

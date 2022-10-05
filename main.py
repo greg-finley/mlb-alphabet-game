@@ -8,6 +8,7 @@ from clients.abstract_sports_client import AbstractSportsClient
 from clients.bigquery_client import BigQueryClient
 from clients.mlb_client import MLBClient
 from clients.nba_client import NBAClient
+from clients.nfl_client import NFLClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
 
@@ -86,7 +87,15 @@ def main_nba():
     print("Ending NBA")
 
 
+def main_nfl():
+    print("Starting NFL")
+    nfl_client = NFLClient(dry_run=DRY_RUN)
+    main(nfl_client)
+    print("Ending NFL")
+
+
 def run(event, context):
     main_mlb()
     main_nhl()
     main_nba()
+    main_nfl()

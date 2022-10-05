@@ -1,6 +1,7 @@
 from clients.image_client import ImageClient
 from clients.mlb_client import MLBClient
 from clients.nba_client import NBAClient
+from clients.nfl_client import NFLClient
 from clients.nhl_client import NHLClient
 from my_types import ImageInput
 
@@ -13,6 +14,7 @@ nba = (
     1626149,
     "Slam Dunk",
 )
+nfl = (NFLClient(dry_run=True), "BenJarvus Green-Ellis", 3924327, "Touchdown")
 
 for item in [
     (["K"], "", "one.png"),
@@ -22,7 +24,7 @@ for item in [
     (["K", "L", "M", "N", "O"], "🚨 QUINTUPLE LETTER 🚨", "five.png"),
     (["K", "L", "M", "N", "O", "P"], "🚨 SEXTUPLE LETTER 🚨", "six.png"),
 ]:
-    for i, sport in enumerate([mlb, nhl, nba]):
+    for i, sport in enumerate([mlb, nhl, nba, nfl]):
         image_input = ImageInput(
             player_name=sport[1],
             player_id=sport[2],
