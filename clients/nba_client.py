@@ -182,7 +182,6 @@ class NBAClient(AbstractSportsClient):
 
         for g in games:
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
-            print("Getting all plays")
             try:
                 all_plays = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
@@ -190,13 +189,12 @@ class NBAClient(AbstractSportsClient):
             # Sometimes the game says period 1 but it hasn't truly started yet
             except requests.JSONDecodeError:
                 continue
-            print("Got all plays")
             for p in all_plays:
                 play_id = str(p["actionNumber"])
                 if (
                     p.get("shotResult") == "Made"
                     and p.get("subType") == "DUNK"
-                    and (self.dry_run or play_id not in known_play_ids_for_this_game)
+                    and play_id not in known_play_ids_for_this_game
                 ):
                     player_id = p["personId"]
                     period = self._period_to_string(p["period"])
@@ -264,20 +262,6 @@ class NBAClient(AbstractSportsClient):
             if p["personId"] == player_id_str:
                 return p["firstName"] + " " + p["lastName"]
         raise UnknownPlayerError(f"Could not find player with id {player_id}")
-
-    def _period_to_string(self, period: int):
-        if period == 1:
-            return "1st"
-        elif period == 2:
-            return "2nd"
-        elif period == 3:
-            return "3rd"
-        elif period == 4:
-            return "4th"
-        elif period == 5:
-            return "OT"
-        else:
-            return f"{period - 4}OT"
 
     def _clean_clock(self, clock: str) -> str:
         """Change a time like PT06M40.00S to 06:40."""

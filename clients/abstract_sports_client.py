@@ -23,7 +23,7 @@ class AbstractSportsClient(ABC):
     def alphabet_game_name(self) -> str:
         pass
 
-    # Override for MLB
+    # Override for MLB and NFL
     @property
     def season_year(self) -> str:
         return str(
@@ -67,7 +67,7 @@ class AbstractSportsClient(ABC):
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         pass
 
-    # For NHL and NBA, overriden in MLB
+    # For NHL and NBA, overriden in MLB and NFL
     def season_phrase(self, season_period: SeasonPeriod) -> str:
         if season_period == SeasonPeriod.PRESEASON:
             return f"in the {self.season_year} preseason"
@@ -129,5 +129,20 @@ class AbstractSportsClient(ABC):
     def get_tweetable_plays(
         self, games: list[Game], known_play_ids: dict[str, list[str]]
     ) -> list[TweetablePlay]:
-        """Find any new plays that could be Tweetable, depending on the State. We need to record them even if not tweetable"""
+        """Find any new plays that could be Tweetable, depending on the State."""
         pass
+
+    # For NBA and NFL
+    def _period_to_string(self, period: int):
+        if period == 1:
+            return "1st"
+        elif period == 2:
+            return "2nd"
+        elif period == 3:
+            return "3rd"
+        elif period == 4:
+            return "4th"
+        elif period == 5:
+            return "OT"
+        else:
+            return f"{period - 4}OT"

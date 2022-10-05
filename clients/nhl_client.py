@@ -137,8 +137,9 @@ class NHLClient(AbstractSportsClient):
             known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
             for p in all_plays:
                 play_id = str(p["about"]["eventId"])
-                if p["result"]["event"] == "Goal" and (
-                    self.dry_run or play_id not in known_play_ids_for_this_game
+                if (
+                    p["result"]["event"] == "Goal"
+                    and play_id not in known_play_ids_for_this_game
                 ):
                     scorer: Any = None
                     for i, player in enumerate(p["players"]):

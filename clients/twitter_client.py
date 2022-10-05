@@ -70,9 +70,12 @@ class TwitterClient:
                 media_ids=[media.media_id],
             )
             state.tweet_id = tweet.id
+        else:
+            # Increment the tweet_id to test the BQ logic
+            state.tweet_id += 1
 
     def tweet_unmatched(self, tweetable_play: TweetablePlay, state: State) -> None:
-        if state.tweet_id or self.dry_run:
+        if state.tweet_id:
             status = f"""{random.choice(SAD_EMOJIS)} {random.choice(SAD_PHRASES)}.
 
 {tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have the letter {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._score_with_spacing(tweetable_play.score)}"""
