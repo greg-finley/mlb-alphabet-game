@@ -37,7 +37,7 @@ class MLBClient(AbstractSportsClient):
 
     @property
     def season_period_override(self) -> str | None:
-        return "since Sept. 25, 2022"
+        return None
 
     @property
     def season_year(self) -> str:

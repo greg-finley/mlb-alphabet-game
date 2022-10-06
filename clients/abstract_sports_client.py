@@ -79,7 +79,7 @@ class AbstractSportsClient(ABC):
             return f"in the {self.season_year} play-in games"
         raise ValueError(f"Unknown season period: {season_period}")
 
-    # This is shared between MLB and NHL and overriden in NBA
+    # This is shared between MLB and NHL and overriden in NBA and NFL
     def get_current_games(self, completed_games: list[str]) -> list[Game]:
         # Fudge it by a day in either direction in case of timezone issues
         today = datetime.date.today()
