@@ -26,18 +26,18 @@ class BigQueryClient:
     def set_completed_games(self, games: list[Game]) -> None:
         if not games:
             return
-        completed_games: list[Game] = []
+        completed_game_ids: set[str] = set()
         for g in games:
             if g.is_complete:
-                completed_games.append(g)
-        if not completed_games:
+                completed_game_ids.add(g.game_id)
+        if not completed_game_ids:
             return
         q = """
             INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
             VALUES
         """
-        for g in completed_games:
-            q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
+        for id in completed_game_ids:
+            q += f"('{id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
         q = q[:-1]  # remove trailing comma
         print(q)
         self.client.query(q, job_config=self.job_config).result()

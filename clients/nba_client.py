@@ -76,8 +76,7 @@ class NBAClient(AbstractSportsClient):
         games = []
         for g in all_games:
             if (
-                g["period"]["current"] > 0
-                and g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
+                g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
                 and g["gameId"] not in completed_games
             ):
                 games.append(
@@ -186,12 +185,14 @@ class NBAClient(AbstractSportsClient):
                 all_plays = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
                 ).json()["game"]["actions"]
-            # Sometimes the game says period 1 but it hasn't truly started yet
+            # Sometimes the game hasn't started yet
             except requests.JSONDecodeError:
                 continue
             for p in all_plays:
                 play_id = str(p["actionNumber"])
-                if (
+                if p["actionType"] == "game" and p["subType"] == "end":
+                    g.is_complete = True
+                elif (
                     p.get("shotResult") == "Made"
                     and p.get("subType") == "DUNK"
                     and play_id not in known_play_ids_for_this_game
@@ -250,12 +251,10 @@ class NBAClient(AbstractSportsClient):
         """
         player_id_str = str(player_id)
         if not self.all_players:
-            print("Starting get all players")
             all_players = requests.get(
                 f"https://data.nba.net/prod/v1/{self.season_year}/players.json"
             ).json()["league"]["standard"]
             self.all_players = all_players
-            print("Got all players")
         else:
             all_players = self.all_players
         for p in all_players:

@@ -44,7 +44,7 @@ def main(sports_client: AbstractSportsClient):
 
     if not tweetable_plays:
         print("No new Tweetable plays")
-        bigquery_client.set_completed_games(games)
+        bigquery_client.set_completed_games(relevant_games + games)
         bigquery_client.update_state(state)
         return
 
