@@ -12,7 +12,7 @@ The alphabet game, looking for the next letter in MLB player names as they hit h
 
 # Google Cloud Function
 
-This code is run in a Google Cloud Function, triggered every 10 minutes via Google Cloud Scheduler. Keep a prior state in Google BigQuery (cheaper than making a Postgres instance in the cloud, though Postgres is of course the better choice) of the target letter, the number of times we have cycled through the alphabet, and the last processed play end time. As we poll for today's plays, process any new plays after the last known end data. Tweet if it was a hit and the batter's name had the target letter. For the last play in the list (even if not tweetable), update the last play end date, as well as any changes to the target letter or number of alphabet cycles, to BigQuery.
+This code is run in a Google Cloud Function, triggered every 2 minutes via Google Cloud Scheduler. Keep a prior state in Google BigQuery (cheaper than making a Postgres instance in the cloud, though Postgres is of course the better choice) of the target letter, the number of times we have cycled through the alphabet, and the season period (preseason, regular season, playoffs). As we poll for today's plays, process any tweetable plays we have not seen before. Tweet a picture if the player's name matches the target letter, or reply to the previous thread if not.
 
 # Dry run
 
