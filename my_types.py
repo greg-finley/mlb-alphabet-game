@@ -126,7 +126,13 @@ class State:
             and not has_playin
             and not has_playoffs
         ):
-            return [g for g in games if g.season_period == SeasonPeriod.REGULAR_SEASON]
+            regular_season_games: list[Game] = []
+            for g in games:
+                if g.season_period == SeasonPeriod.PRESEASON:
+                    g.is_complete = True
+                elif g.season_period == SeasonPeriod.REGULAR_SEASON:
+                    regular_season_games.append(g)
+            return regular_season_games
         else:
             print(
                 f"{self.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
