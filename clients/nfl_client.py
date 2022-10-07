@@ -182,7 +182,7 @@ class NFLClient(AbstractSportsClient):
                             player["athlete"]["id"]
                         )
 
-            scoring_plays = response["scoringPlays"]
+            scoring_plays = response.get("scoringPlays", [])
             for p in scoring_plays:
                 play_id = str(p["id"])
                 if (
