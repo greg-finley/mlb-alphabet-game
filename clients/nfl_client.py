@@ -58,16 +58,25 @@ class NFLClient(AbstractSportsClient):
         games: list[Game] = []
         for g in all_games:
             if g["id"] not in completed_games and g["status"]["type"]["state"] != "pre":
+                competitors = g["competitions"][0]["competitors"]
+                home_team_id: int | None = None
+                away_team_id: int | None = None
+                for c in competitors:
+                    if c["homeAway"] == "home":
+                        assert home_team_id is None
+                        home_team_id = int(c["team"]["id"])
+                    elif c["homeAway"] == "away":
+                        assert away_team_id is None
+                        away_team_id = int(c["team"]["id"])
+                    else:
+                        raise ValueError(f"Unknown homeAway value: {c['homeAway']}")
+
                 games.append(
                     Game(
                         game_id=g["id"],
                         is_complete=g["status"]["type"]["completed"],
-                        home_team_id=int(
-                            g["competitions"][0]["competitors"][1]["team"]["id"]
-                        ),
-                        away_team_id=int(
-                            g["competitions"][0]["competitors"][0]["team"]["id"]
-                        ),
+                        home_team_id=home_team_id,
+                        away_team_id=away_team_id,
                         season_period=self.season_period(g["season"]["slug"]),
                     )
                 )
