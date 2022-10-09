@@ -70,6 +70,8 @@ class NFLClient(AbstractSportsClient):
                         away_team_id = int(c["team"]["id"])
                     else:
                         raise ValueError(f"Unknown homeAway value: {c['homeAway']}")
+                assert home_team_id is not None
+                assert away_team_id is not None
 
                 games.append(
                     Game(
