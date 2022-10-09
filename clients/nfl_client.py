@@ -124,8 +124,8 @@ class NFLClient(AbstractSportsClient):
     @property
     def team_to_hashtag(self) -> dict:
         return {
-            22: "#DirtyBirds",
-            1: "#BirdCityFootball",
+            1: "#DirtyBirds",
+            22: "#BirdCityFootball",
             33: "#RavensFlock",
             2: "#BillsMafia",
             29: "#KeepPounding",
