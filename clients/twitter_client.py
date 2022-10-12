@@ -70,9 +70,11 @@ class TwitterClient:
                 media_ids=[media.media_id],
             )
             state.tweet_id = tweet.id
+            tweetable_play.tweet_id = tweet.id
         else:
             # Increment the tweet_id to test the BQ logic
             state.tweet_id += 1
+            tweetable_play.tweet_id = state.tweet_id
 
     def tweet_unmatched(self, tweetable_play: TweetablePlay, state: State) -> None:
         if state.tweet_id:
@@ -86,9 +88,11 @@ class TwitterClient:
                     in_reply_to_status_id=state.tweet_id,
                 )
                 state.tweet_id = tweet.id
+                tweetable_play.tweet_id = tweet.id
             else:
                 # Increment the tweet_id to test the BQ logic
                 state.tweet_id += 1
+                tweetable_play.tweet_id = state.tweet_id
 
     def _alert(self, matching_letters: list[str]) -> str:
         if len(matching_letters) == 1:

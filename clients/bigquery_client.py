@@ -83,12 +83,16 @@ class BigQueryClient:
             if deduped_play not in deduped_tweetable_plays:
                 deduped_tweetable_plays.append(deduped_play)
 
+        # We could probably nix deduped_tweetable_plays, but for now assert that it's the same length
+        assert len(deduped_tweetable_plays) == len(tweetable_plays)
+
         q = """
-            INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at)
+            INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at, tweet_id, player_name, season_phrase)
             VALUES
         """
-        for p in deduped_tweetable_plays:
-            q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
+        for p in tweetable_plays:
+            assert p.tweet_id is not None
+            q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {p.tweet_id}, '{p.player_name}', '{p.season_phrase}'),"
         q = q[:-1]  # remove trailing comma
         print(q)
         self.client.query(q, job_config=self.job_config).result()

@@ -162,6 +162,7 @@ class TweetablePlay:
     score: str  # CIN (2) @ MIL (1) 🔺8
     season_period: SeasonPeriod
     season_phrase: str  # "in the 2022-23 season". Can be simplified once we don't need to support partial MLB season anymore.
+    tweet_id: int | None = None
 
 
 @dataclass
