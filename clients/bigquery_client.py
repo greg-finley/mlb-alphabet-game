@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 from google.cloud import bigquery  # type: ignore
 from my_types import DedupedTweetablePlay, Game, State, TweetablePlay
 
@@ -14,13 +16,17 @@ class BigQueryClient:
 
     def get_recently_completed_games(self) -> list[str]:
         query = f"""
-            SELECT game_id
+            SELECT game_id, completed_at
             FROM mlb_alphabet_game.completed_games
             where sport = '{self.league_code}'
             order by completed_at desc limit 100
         """
         results = self.client.query(query, job_config=self.job_config).result()
-        game_ids = [r.game_id for r in results]
+        # Keep polling games until 30 minutes after they have been marked completed,
+        # in case a call gets overturned or something
+        game_ids = [
+            r.game_id for r in results if str(r.completed_at) < self._30_minutes_ago
+        ]
         return game_ids
 
     def set_completed_games(self, games: list[Game]) -> None:
@@ -28,17 +34,14 @@ class BigQueryClient:
         for g in games:
             if g.is_complete:
                 complete_games.append(g)
-        if not complete_games:
-            return
-        q = """
-            INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
-            VALUES
-        """
         for g in complete_games:
-            q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
-        q = q[:-1]  # remove trailing comma
-        print(q)
-        self.client.query(q, job_config=self.job_config).result()
+            q = f"""INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
+            WITH s AS (SELECT '{g.game_id}' as game_id, '{self.league_code}' as sport, CURRENT_TIMESTAMP() as completed_at)
+            SELECT game_id, sport, completed_at FROM s WHERE NOT EXISTS (
+            SELECT * FROM mlb_alphabet_game.completed_games g WHERE g.game_id = s.game_id and g.sport = s.sport
+            );"""
+            print(q)
+            self.client.query(q, job_config=self.job_config).result()
 
     def get_known_play_ids(self, games: list[Game]) -> dict[str, list[str]]:
         """
@@ -105,3 +108,10 @@ class BigQueryClient:
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id} WHERE sport='{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()
+
+    @property
+    def _30_minutes_ago(self) -> str:
+        """Get a time 30 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
+        dt = datetime.datetime.now(datetime.timezone.utc)
+        dt = dt - datetime.timedelta(minutes=30)
+        return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
