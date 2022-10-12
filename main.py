@@ -22,7 +22,7 @@ def main(sports_client: AbstractSportsClient):
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=sports_client)
 
     # Get games we have already completely process so we don't poll them again
-    completed_games = bigquery_client.get_recently_completed_games()
+    completed_games = bigquery_client.get_completed_games()
 
     # Poll for today's games and find all the plays we haven't processed yet
     games = sports_client.get_current_games(completed_games)

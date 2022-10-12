@@ -186,6 +186,13 @@ class ImageInput:
 class Game:
     game_id: str  # NBA needs strings like "0012200002"
     is_complete: bool
+    is_already_marked_as_complete: bool
     home_team_id: int
     away_team_id: int
     season_period: SeasonPeriod
+
+
+@dataclass
+class CompletedGame:
+    game_id: str
+    recently_completed: bool

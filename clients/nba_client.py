@@ -5,7 +5,13 @@ import os
 import random
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import (
+    CompletedGame,
+    Game,
+    SeasonPeriod,
+    TweetablePlay,
+    TwitterCredentials,
+)
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -63,7 +69,7 @@ class NBAClient(AbstractSportsClient):
     def alphabet_game_name(self) -> str:
         return "Slam Dunk"
 
-    def get_current_games(self, completed_games: list[str]) -> list[Game]:
+    def get_current_games(self, completed_games: list[CompletedGame]) -> list[Game]:
         today = datetime.date.today()
         yesterday_str = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
         tomorrow_str = (today + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -74,15 +80,27 @@ class NBAClient(AbstractSportsClient):
         ).json()["league"]["standard"]
 
         games = []
+        old_completed_game_ids: list[str] = []
+        recent_completed_game_ids: list[str] = []
+        for cg in completed_games:
+            if cg.recently_completed:
+                recent_completed_game_ids.append(cg.game_id)
+            else:
+                old_completed_game_ids.append(cg.game_id)
         for g in all_games:
+            game_id = g["gameId"]
+            assert type(game_id) == str
             if (
                 g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
-                and g["gameId"] not in completed_games
+                and game_id not in old_completed_game_ids
             ):
                 games.append(
                     Game(
                         game_id=g["gameId"],
                         is_complete=g["statusNum"] == 3,
+                        is_already_marked_as_complete=(
+                            game_id in recent_completed_game_ids
+                        ),
                         home_team_id=g["hTeam"]["teamId"],
                         away_team_id=g["vTeam"]["teamId"],
                         season_period=self.season_period(str(g["seasonStageId"])),
