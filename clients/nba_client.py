@@ -89,6 +89,7 @@ class NBAClient(AbstractSportsClient):
                 old_completed_game_ids.append(cg.game_id)
         for g in all_games:
             game_id = g["gameId"]
+            assert type(game_id) == str
             if (
                 g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
                 and game_id not in old_completed_game_ids

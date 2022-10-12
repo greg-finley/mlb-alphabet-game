@@ -71,6 +71,7 @@ class NFLClient(AbstractSportsClient):
                 old_completed_game_ids.append(cg.game_id)
         for g in all_games:
             game_id = g["id"]
+            assert type(game_id) == str
             if (
                 game_id not in old_completed_game_ids
                 and g["status"]["type"]["state"] != "pre"
