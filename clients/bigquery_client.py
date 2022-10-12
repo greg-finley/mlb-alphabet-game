@@ -92,7 +92,7 @@ class BigQueryClient:
         """
         for p in tweetable_plays:
             assert p.tweet_id is not None
-            q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {p.tweet_id}, '{p.player_name}', '{p.season_phrase}'),"
+            q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {p.tweet_id}, '{self.clean_player_name(p.player_name)}', '{p.season_phrase}'),"
         q = q[:-1]  # remove trailing comma
         print(q)
         self.client.query(q, job_config=self.job_config).result()
@@ -126,3 +126,6 @@ class BigQueryClient:
         dt = datetime.datetime.now(datetime.timezone.utc)
         dt = dt - datetime.timedelta(minutes=30)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
+
+    def clean_player_name(self, player_name: str) -> str:
+        return player_name.replace("'", "\\'")
