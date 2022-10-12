@@ -4,7 +4,13 @@ import datetime
 import os
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import (
+    CompletedGame,
+    Game,
+    SeasonPeriod,
+    TweetablePlay,
+    TwitterCredentials,
+)
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -49,15 +55,26 @@ class NFLClient(AbstractSportsClient):
     def alphabet_game_name(self) -> str:
         return "Touchdown"
 
-    def get_current_games(self, completed_games: list[str]) -> list[Game]:
+    def get_current_games(self, completed_games: list[CompletedGame]) -> list[Game]:
 
         all_games = requests.get(
             "http://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard"
         ).json()["events"]
 
         games: list[Game] = []
+        old_completed_game_ids: list[str] = []
+        recent_completed_game_ids: list[str] = []
+        for cg in completed_games:
+            if cg.recently_completed:
+                recent_completed_game_ids.append(cg.game_id)
+            else:
+                old_completed_game_ids.append(cg.game_id)
         for g in all_games:
-            if g["id"] not in completed_games and g["status"]["type"]["state"] != "pre":
+            game_id = g["id"]
+            if (
+                game_id not in old_completed_game_ids
+                and g["status"]["type"]["state"] != "pre"
+            ):
                 competitors = g["competitions"][0]["competitors"]
                 home_team_id: int | None = None
                 away_team_id: int | None = None
@@ -77,6 +94,9 @@ class NFLClient(AbstractSportsClient):
                     Game(
                         game_id=g["id"],
                         is_complete=g["status"]["type"]["completed"],
+                        is_already_marked_as_complete=(
+                            game_id in recent_completed_game_ids
+                        ),
                         home_team_id=home_team_id,
                         away_team_id=away_team_id,
                         season_period=self.season_period(g["season"]["slug"]),

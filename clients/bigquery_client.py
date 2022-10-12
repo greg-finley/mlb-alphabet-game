@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 
 from google.cloud import bigquery  # type: ignore
-from my_types import DedupedTweetablePlay, Game, State, TweetablePlay
+from my_types import CompletedGame, DedupedTweetablePlay, Game, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -14,7 +14,7 @@ class BigQueryClient:
         self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
 
-    def get_recently_completed_games(self) -> list[str]:
+    def get_completed_games(self) -> list[CompletedGame]:
         query = f"""
             SELECT game_id, completed_at
             FROM mlb_alphabet_game.completed_games
@@ -24,24 +24,31 @@ class BigQueryClient:
         results = self.client.query(query, job_config=self.job_config).result()
         # Keep polling games until 30 minutes after they have been marked completed,
         # in case a call gets overturned or something
-        game_ids = [
-            r.game_id for r in results if str(r.completed_at) < self._30_minutes_ago
+        completed_games = [
+            CompletedGame(
+                game_id=r.game_id,
+                recently_completed=str(r.completed_at) < self._30_minutes_ago,
+            )
+            for r in results
         ]
-        return game_ids
+        return completed_games
 
     def set_completed_games(self, games: list[Game]) -> None:
         complete_games: list[Game] = []
         for g in games:
-            if g.is_complete:
+            if g.is_complete and not g.is_already_marked_as_complete:
                 complete_games.append(g)
+        if not complete_games:
+            return
+        q = """
+            INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
+            VALUES
+        """
         for g in complete_games:
-            q = f"""INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
-            WITH s AS (SELECT '{g.game_id}' as game_id, '{self.league_code}' as sport, CURRENT_TIMESTAMP() as completed_at)
-            SELECT game_id, sport, completed_at FROM s WHERE NOT EXISTS (
-            SELECT * FROM mlb_alphabet_game.completed_games g WHERE g.game_id = s.game_id and g.sport = s.sport
-            );"""
-            print(q)
-            self.client.query(q, job_config=self.job_config).result()
+            q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
+        q = q[:-1]  # remove trailing comma
+        print(q)
+        self.client.query(q, job_config=self.job_config).result()
 
     def get_known_play_ids(self, games: list[Game]) -> dict[str, list[str]]:
         """

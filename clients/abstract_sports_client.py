@@ -4,7 +4,13 @@ import datetime
 from abc import ABC, abstractmethod
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import (
+    CompletedGame,
+    Game,
+    SeasonPeriod,
+    TweetablePlay,
+    TwitterCredentials,
+)
 
 
 class AbstractSportsClient(ABC):
@@ -80,7 +86,7 @@ class AbstractSportsClient(ABC):
         raise ValueError(f"Unknown season period: {season_period}")
 
     # This is shared between MLB and NHL and overriden in NBA and NFL
-    def get_current_games(self, completed_games: list[str]) -> list[Game]:
+    def get_current_games(self, completed_games: list[CompletedGame]) -> list[Game]:
         # Fudge it by a day in either direction in case of timezone issues
         today = datetime.date.today()
         yesterday = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
@@ -92,17 +98,30 @@ class AbstractSportsClient(ABC):
         ).json()["dates"]
 
         games: list[Game] = []
+        old_completed_game_ids: list[str] = []
+        recent_completed_game_ids: list[str] = []
+        for cg in completed_games:
+            if cg.recently_completed:
+                recent_completed_game_ids.append(cg.game_id)
+            else:
+                old_completed_game_ids.append(cg.game_id)
         for d in dates:
             for g in d["games"]:
                 game_id = str(g["gamePk"])
                 abstract_game_state = g["status"]["abstractGameState"]
                 # Filter on our list of completed games instead of what the API says
                 # in case the game ended with a hit we have not processed yet
-                if abstract_game_state != "Preview" and game_id not in completed_games:
+                if (
+                    abstract_game_state != "Preview"
+                    and game_id not in old_completed_game_ids
+                ):
                     games.append(
                         Game(
                             game_id=game_id,
                             is_complete=abstract_game_state == "Final",
+                            is_already_marked_as_complete=(
+                                game_id in recent_completed_game_ids
+                            ),
                             home_team_id=g["teams"]["home"]["team"]["id"],
                             away_team_id=g["teams"]["away"]["team"]["id"],
                             season_period=self.season_period(g["gameType"]),
