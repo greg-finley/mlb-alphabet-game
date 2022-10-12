@@ -27,7 +27,7 @@ class BigQueryClient:
         completed_games = [
             CompletedGame(
                 game_id=r.game_id,
-                recently_completed=str(r.completed_at) < self._30_minutes_ago,
+                recently_completed=not str(r.completed_at) < self._30_minutes_ago,
             )
             for r in results
         ]
