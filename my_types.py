@@ -166,14 +166,6 @@ class TweetablePlay:
 
 
 @dataclass
-class DedupedTweetablePlay:
-    """A game can have multiple records for the same play_id in hockey, this dedupes it"""
-
-    play_id: str
-    game_id: str
-
-
-@dataclass
 class ImageInput:
     player_name: str  # Charlie Blackmon
     player_id: int  # 453568

@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 
 from google.cloud import bigquery  # type: ignore
-from my_types import CompletedGame, DedupedTweetablePlay, Game, State, TweetablePlay
+from my_types import CompletedGame, Game, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -72,28 +72,14 @@ class BigQueryClient:
             known_play_ids[r.game_id].append(r.play_id)
         return known_play_ids
 
-    def add_tweetable_plays(self, tweetable_plays: list[TweetablePlay]) -> None:
-        if not tweetable_plays:
-            return
-        # Get unique tuples of (game_id, play_id) from tweetable_plays
-        # and dedupe them
-        deduped_tweetable_plays: list[DedupedTweetablePlay] = []
-        for tp in tweetable_plays:
-            deduped_play = DedupedTweetablePlay(play_id=tp.play_id, game_id=tp.game_id)
-            if deduped_play not in deduped_tweetable_plays:
-                deduped_tweetable_plays.append(deduped_play)
-
-        # We could probably nix deduped_tweetable_plays, but for now assert that it's the same length
-        assert len(deduped_tweetable_plays) == len(tweetable_plays)
-
-        q = """
-            INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at, tweet_id, player_name, season_phrase)
+    def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
+        q = f"""
+            INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled)
             VALUES
-        """
-        for p in tweetable_plays:
-            assert p.tweet_id is not None
-            q += f"('{p.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {p.tweet_id}, '{self.clean_player_name(p.player_name)}', '{p.season_phrase}'),"
-        q = q[:-1]  # remove trailing comma
+            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self.clean_player_name(tweetable_play.player_name)}',
+            '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled})
+            """
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 

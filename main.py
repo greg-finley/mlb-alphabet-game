@@ -56,12 +56,12 @@ def main(sports_client: AbstractSportsClient):
             # Tweet it
             twitter_client.tweet_matched(p, state, matching_letters)
             bigquery_client.update_state(state)
-            bigquery_client.add_tweetable_plays([p])
+            bigquery_client.add_tweetable_play(p, state)
 
         else:
             twitter_client.tweet_unmatched(p, state)
             bigquery_client.update_state(state)
-            bigquery_client.add_tweetable_plays([p])
+            bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
 
