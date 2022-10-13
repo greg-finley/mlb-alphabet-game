@@ -35,20 +35,34 @@ class BigQueryClient:
 
     def set_completed_games(self, games: list[Game]) -> None:
         complete_games: list[Game] = []
+        uncompleted_games: list[Game] = []
         for g in games:
             if g.is_complete and not g.is_already_marked_as_complete:
                 complete_games.append(g)
-        if not complete_games:
-            return
-        q = """
-            INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
-            VALUES
-        """
-        for g in complete_games:
-            q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
-        q = q[:-1]  # remove trailing comma
-        print(q)
-        self.client.query(q, job_config=self.job_config).result()
+            elif g.is_already_marked_as_complete and not g.is_complete:
+                uncompleted_games.append(g)
+
+        if complete_games:
+            q = """
+                INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
+                VALUES
+            """
+            for g in complete_games:
+                q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
+            q = q[:-1]  # remove trailing comma
+            print(q)
+            self.client.query(q, job_config=self.job_config).result()
+        if uncompleted_games:
+            q = """
+                DELETE FROM mlb_alphabet_game.completed_games
+                WHERE game_id in (
+            """
+            for g in uncompleted_games:
+                q += f"'{g.game_id}',"
+            q = q[:-1]  # remove trailing comma
+            q += f") and sport = '{self.league_code}'"
+            print(q)
+            self.client.query(q, job_config=self.job_config).result()
 
     def get_known_play_ids(self, games: list[Game]) -> dict[str, list[str]]:
         """
