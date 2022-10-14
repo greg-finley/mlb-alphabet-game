@@ -140,6 +140,7 @@ class NHLClient(AbstractSportsClient):
                 if (
                     p["result"]["event"] == "Goal"
                     and play_id not in known_play_ids_for_this_game
+                    and p.get("players")
                 ):
                     scorer: Any = None
                     for i, player in enumerate(p["players"]):
