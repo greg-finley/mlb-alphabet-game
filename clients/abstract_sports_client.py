@@ -109,6 +109,7 @@ class AbstractSportsClient(ABC):
             for g in d["games"]:
                 game_id = str(g["gamePk"])
                 abstract_game_state = g["status"]["abstractGameState"]
+                detailed_state = g["status"]["detailedState"]
                 # Filter on our list of completed games instead of what the API says
                 # in case the game ended with a hit we have not processed yet
                 if (
@@ -118,7 +119,7 @@ class AbstractSportsClient(ABC):
                     games.append(
                         Game(
                             game_id=game_id,
-                            is_complete=abstract_game_state == "Final",
+                            is_complete=detailed_state == "Final",
                             is_already_marked_as_complete=(
                                 game_id in recent_completed_game_ids
                             ),
