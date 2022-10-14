@@ -150,6 +150,7 @@ class State:
 class TweetablePlay:
     """A play that if tweetable, assuming we are on the right letter. We need to record the list of seen plays on end run."""
 
+    already_known: bool
     play_id: str
     game_id: str
     end_time: str
@@ -163,6 +164,16 @@ class TweetablePlay:
     season_period: SeasonPeriod
     season_phrase: str  # "in the 2022-23 season". Can be simplified once we don't need to support partial MLB season anymore.
     tweet_id: int | None = None
+
+
+@dataclass
+class KnownPlay:
+    play_id: str
+    game_id: str
+    player_name: str
+
+
+KnownPlays = dict[str, list[KnownPlay]]
 
 
 @dataclass

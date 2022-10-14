@@ -8,6 +8,7 @@ import requests
 from my_types import (
     CompletedGame,
     Game,
+    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -192,13 +193,16 @@ class NBAClient(AbstractSportsClient):
         return "dunked"
 
     def get_tweetable_plays(
-        self, games: list[Game], known_play_ids: dict[str, list[str]]
+        self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:
         """Get dunks we haven't processed yet and sort them by end_time."""
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
+            known_play_ids_for_this_game = [
+                kp.play_id for kp in known_plays_for_this_game
+            ]
             try:
                 all_plays = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
@@ -210,11 +214,7 @@ class NBAClient(AbstractSportsClient):
                 play_id = str(p["actionNumber"])
                 if p["actionType"] == "game" and p["subType"] == "end":
                     g.is_complete = True
-                elif (
-                    p.get("shotResult") == "Made"
-                    and p.get("subType") == "DUNK"
-                    and play_id not in known_play_ids_for_this_game
-                ):
+                elif p.get("shotResult") == "Made" and p.get("subType") == "DUNK":
                     player_id = p["personId"]
                     period = self._period_to_string(p["period"])
                     clock = self._clean_clock(p["clock"])
@@ -232,6 +232,7 @@ class NBAClient(AbstractSportsClient):
 
                     tweetable_plays.append(
                         TweetablePlay(
+                            already_known=play_id in known_play_ids_for_this_game,
                             play_id=play_id,
                             game_id=g.game_id,
                             end_time=p["timeActual"],

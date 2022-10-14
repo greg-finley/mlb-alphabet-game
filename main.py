@@ -39,17 +39,25 @@ def main(sports_client: AbstractSportsClient):
     # Side effect of updating the state if season period changes
     relevant_games = state.check_for_season_period_change(games)
 
-    known_play_ids = bigquery_client.get_known_play_ids(relevant_games)
-    tweetable_plays = sports_client.get_tweetable_plays(relevant_games, known_play_ids)
+    known_plays = bigquery_client.get_known_plays(relevant_games)
+    tweetable_plays = sports_client.get_tweetable_plays(relevant_games, known_plays)
 
-    if not tweetable_plays:
+    # TODO: Add something here that will clean up known plays that no longer exist
+    # (delete tweets, delete from tweetable_plays table, update state)
+    # Just return early and fix it the next run?
+    # Maybe tweetable_plays doesn't have the already_known flag and get_tweetable_plays
+    # doesn't accept known_plays parameter, we just get new_tweetable_plays from this new function
+
+    new_tweetable_plays = [p for p in tweetable_plays if not p.already_known]
+
+    if not new_tweetable_plays:
         print("No new Tweetable plays")
         bigquery_client.set_completed_games(games)
         bigquery_client.update_state(state)
         return
 
     twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
-    for p in tweetable_plays:
+    for p in new_tweetable_plays:
         matching_letters = state.find_matching_letters(p)
 
         if matching_letters:

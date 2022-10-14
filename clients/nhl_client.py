@@ -4,7 +4,7 @@ import os
 from typing import Any
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -123,7 +123,7 @@ class NHLClient(AbstractSportsClient):
         return "scored a goal"
 
     def get_tweetable_plays(
-        self, games: list[Game], known_play_ids: dict[str, list[str]]
+        self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:
         """
         Get all goals that we haven't processed yet, only the goal scorer (not the assister).
@@ -134,14 +134,13 @@ class NHLClient(AbstractSportsClient):
             all_plays = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
-            known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
+            known_play_ids_for_this_game = [
+                kp.play_id for kp in known_plays_for_this_game
+            ]
             for p in all_plays:
                 play_id = str(p["about"]["eventId"])
-                if (
-                    p["result"]["event"] == "Goal"
-                    and play_id not in known_play_ids_for_this_game
-                    and p.get("players")
-                ):
+                if p["result"]["event"] == "Goal" and p.get("players"):
                     scorer: Any = None
                     for i, player in enumerate(p["players"]):
                         if player["playerType"] != "Scorer":
@@ -159,6 +158,7 @@ class NHLClient(AbstractSportsClient):
 
                         tweetable_plays.append(
                             TweetablePlay(
+                                already_known=play_id in known_play_ids_for_this_game,
                                 play_id=play_id,
                                 game_id=g.game_id,
                                 image_name="Goal",

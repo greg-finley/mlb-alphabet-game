@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 
 from google.cloud import bigquery  # type: ignore
-from my_types import CompletedGame, Game, State, TweetablePlay
+from my_types import CompletedGame, Game, KnownPlay, KnownPlays, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -64,7 +64,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
-    def get_known_play_ids(self, games: list[Game]) -> dict[str, list[str]]:
+    def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
         In prior runs, we should record which plays we've already processed.
         """
@@ -72,19 +72,19 @@ class BigQueryClient:
         if not games:
             return {}
         query = f"""
-                SELECT game_id, play_id
+                SELECT play_id, game_id, player_name
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
             """
         print(query)
         results = self.client.query(query, job_config=self.job_config).result()
-        known_play_ids: dict[str, list[str]] = {}
+        known_plays: KnownPlays = {}
         for r in results:
-            if r.game_id not in known_play_ids:
-                known_play_ids[r.game_id] = []
-            known_play_ids[r.game_id].append(r.play_id)
-        return known_play_ids
+            if r.game_id not in known_plays:
+                known_plays[r.game_id] = [KnownPlay(*r)]
+            known_plays[r.game_id].append(KnownPlay(*r))
+        return known_plays
 
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""

@@ -5,7 +5,7 @@ import os
 import random
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -155,23 +155,22 @@ class MLBClient(AbstractSportsClient):
         return "hit a homer"
 
     def get_tweetable_plays(
-        self, games: list[Game], known_play_ids: dict[str, list[str]]
+        self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:
         """Get home runs we haven't processed yet and sort them by end_time."""
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            known_play_ids_for_this_game = known_play_ids.get(g.game_id, [])
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
+            known_play_ids_for_this_game = [
+                kp.play_id for kp in known_plays_for_this_game
+            ]
             all_plays = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
-                if (
-                    p["about"]["isComplete"]
-                    and p["result"]["eventType"] == "home_run"
-                    and play_id not in known_play_ids_for_this_game
-                ):
+                if p["about"]["isComplete"] and p["result"]["eventType"] == "home_run":
                     if p["result"]["rbi"] == 1:
                         image_name = "Solo Home Run"
                         hit_name = f"solo {random.choice(HOME_RUN_NAMES)}"
@@ -196,6 +195,7 @@ class MLBClient(AbstractSportsClient):
 
                     tweetable_plays.append(
                         TweetablePlay(
+                            already_known=play_id in known_play_ids_for_this_game,
                             play_id=play_id,
                             game_id=g.game_id,
                             image_name=image_name,
