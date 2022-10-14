@@ -109,12 +109,14 @@ class AbstractSportsClient(ABC):
             for g in d["games"]:
                 game_id = str(g["gamePk"])
                 abstract_game_state = g["status"]["abstractGameState"]
+                # Rainout is abstract_game_state == "Final" and detailed_state == "Postponed"
                 detailed_state = g["status"]["detailedState"]
                 # Filter on our list of completed games instead of what the API says
                 # in case the game ended with a hit we have not processed yet
                 if (
                     abstract_game_state != "Preview"
                     and game_id not in old_completed_game_ids
+                    and detailed_state != "Postponed"
                 ):
                     games.append(
                         Game(
