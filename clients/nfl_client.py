@@ -257,7 +257,6 @@ class NFLClient(AbstractSportsClient):
 
         # Sort plays by end_time
         # tweetable_plays.sort(key=lambda p: p.end_time)
-        print(f"Found {len(tweetable_plays)} new Tweetable plays")
         return tweetable_plays
 
     def get_player_picture(self, player_id: int) -> bytes:

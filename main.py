@@ -49,9 +49,9 @@ def main(sports_client: AbstractSportsClient):
     # doesn't accept known_plays parameter, we just get new_tweetable_plays from this new function
 
     new_tweetable_plays = [p for p in tweetable_plays if not p.already_known]
+    print(f"Found {len(new_tweetable_plays)} new tweetable plays")
 
     if not new_tweetable_plays:
-        print("No new Tweetable plays")
         bigquery_client.set_completed_games(games)
         bigquery_client.update_state(state)
         return

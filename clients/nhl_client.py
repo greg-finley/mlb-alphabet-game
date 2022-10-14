@@ -176,7 +176,6 @@ class NHLClient(AbstractSportsClient):
 
         # Sort plays by end_time and tiebreaker
         tweetable_plays.sort(key=lambda p: (p.end_time, p.tiebreaker))
-        print(f"Found {len(tweetable_plays)} new Tweetable plays")
         return tweetable_plays
 
     def get_player_picture(self, player_id: int) -> bytes:
