@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 
 from google.cloud import bigquery  # type: ignore
-from my_types import CompletedGame, Game, KnownPlay, KnownPlays, State, TweetablePlay
+from my_types import CompletedGame, Game, KnownPlay, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -24,14 +24,13 @@ class BigQueryClient:
         results = self.client.query(query, job_config=self.job_config).result()
         # Keep polling games until 30 minutes after they have been marked completed,
         # in case a call gets overturned or something
-        completed_games = [
+        return [
             CompletedGame(
                 game_id=r.game_id,
                 recently_completed=not str(r.completed_at) < self._30_minutes_ago,
             )
             for r in results
         ]
-        return completed_games
 
     def set_completed_games(self, games: list[Game]) -> None:
         complete_games: list[Game] = []
@@ -64,13 +63,13 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
-    def get_known_plays(self, games: list[Game]) -> KnownPlays:
+    def get_known_plays(self, games: list[Game]) -> list[KnownPlay]:
         """
         In prior runs, we should record which plays we've already processed.
         """
         # Should never hit this path without games, but if so there are no plays
         if not games:
-            return {}
+            return []
         query = f"""
                 SELECT play_id, game_id, player_name
                 FROM mlb_alphabet_game.tweetable_plays
@@ -79,12 +78,7 @@ class BigQueryClient:
             """
         print(query)
         results = self.client.query(query, job_config=self.job_config).result()
-        known_plays: KnownPlays = {}
-        for r in results:
-            if r.game_id not in known_plays:
-                known_plays[r.game_id] = [KnownPlay(*r)]
-            known_plays[r.game_id].append(KnownPlay(*r))
-        return known_plays
+        return [KnownPlay(*r) for r in results]
 
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""

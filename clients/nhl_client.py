@@ -4,7 +4,7 @@ import os
 from typing import Any
 
 import requests
-from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
 
@@ -122,9 +122,7 @@ class NHLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a goal"
 
-    def get_tweetable_plays(
-        self, games: list[Game], known_plays: KnownPlays
-    ) -> list[TweetablePlay]:
+    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """
         Get all goals that we haven't processed yet, only the goal scorer (not the assister).
         """
@@ -134,10 +132,6 @@ class NHLClient(AbstractSportsClient):
             all_plays = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()["allPlays"]
-            known_plays_for_this_game = known_plays.get(g.game_id, [])
-            known_play_ids_for_this_game = [
-                kp.play_id for kp in known_plays_for_this_game
-            ]
             for p in all_plays:
                 play_id = str(p["about"]["eventId"])
                 if p["result"]["event"] == "Goal" and p.get("players"):
@@ -158,7 +152,6 @@ class NHLClient(AbstractSportsClient):
 
                         tweetable_plays.append(
                             TweetablePlay(
-                                already_known=play_id in known_play_ids_for_this_game,
                                 play_id=play_id,
                                 game_id=g.game_id,
                                 image_name="Goal",

@@ -7,7 +7,6 @@ import requests
 from my_types import (
     CompletedGame,
     Game,
-    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -193,17 +192,11 @@ class NFLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a touchdown"
 
-    def get_tweetable_plays(
-        self, games: list[Game], known_plays: KnownPlays
-    ) -> list[TweetablePlay]:
+    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Get touchdowns we haven't processed yet and sort them by end_time."""
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            known_plays_for_this_game = known_plays.get(g.game_id, [])
-            known_play_ids_for_this_game = [
-                kp.play_id for kp in known_plays_for_this_game
-            ]
             response = requests.get(
                 f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}"
             ).json()
@@ -239,7 +232,6 @@ class NFLClient(AbstractSportsClient):
 
                     tweetable_plays.append(
                         TweetablePlay(
-                            already_known=play_id in known_play_ids_for_this_game,
                             play_id=play_id,
                             game_id=g.game_id,
                             end_time="",  # This API doesn't tell me the actual time, so nothing to sort on

@@ -11,6 +11,7 @@ from clients.nba_client import NBAClient
 from clients.nfl_client import NFLClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
+from utils import reconcile_plays
 
 load_dotenv()
 
@@ -40,15 +41,20 @@ def main(sports_client: AbstractSportsClient):
     relevant_games = state.check_for_season_period_change(games)
 
     known_plays = bigquery_client.get_known_plays(relevant_games)
-    tweetable_plays = sports_client.get_tweetable_plays(relevant_games, known_plays)
+    print(f"Found {len(known_plays)} known plays")
+    tweetable_plays = sports_client.get_tweetable_plays(relevant_games)
+    print(f"Found {len(tweetable_plays)} tweetable plays")
 
-    # TODO: Add something here that will clean up known plays that no longer exist
-    # (delete tweets, delete from tweetable_plays table, update state)
-    # Just return early and fix it the next run?
-    # Maybe tweetable_plays doesn't have the already_known flag and get_tweetable_plays
-    # doesn't accept known_plays parameter, we just get new_tweetable_plays from this new function
+    deleted_plays, new_tweetable_plays = reconcile_plays(known_plays, tweetable_plays)
 
-    new_tweetable_plays = [p for p in tweetable_plays if not p.already_known]
+    # TODO: If some previously tweeted plays are now gone, we should delete the tweet and subsequent tweets, and reset the state
+    # We can then just call the process again and return early in this run
+    if deleted_plays:
+        print(f"Found deleted plays: {deleted_plays}")
+        # state.handle_deleted_plays(deleted_plays)
+        # main(sports_client)
+        # return
+
     print(f"Found {len(new_tweetable_plays)} new tweetable plays")
 
     if not new_tweetable_plays:

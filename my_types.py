@@ -150,7 +150,6 @@ class State:
 class TweetablePlay:
     """A play that if tweetable, assuming we are on the right letter. We need to record the list of seen plays on end run."""
 
-    already_known: bool
     play_id: str
     game_id: str
     end_time: str
@@ -171,9 +170,6 @@ class KnownPlay:
     play_id: str
     game_id: str
     player_name: str
-
-
-KnownPlays = dict[str, list[KnownPlay]]
 
 
 @dataclass

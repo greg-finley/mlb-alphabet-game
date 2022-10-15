@@ -7,7 +7,6 @@ import requests
 from my_types import (
     CompletedGame,
     Game,
-    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -149,9 +148,7 @@ class AbstractSportsClient(ABC):
         pass
 
     @abstractmethod
-    def get_tweetable_plays(
-        self, games: list[Game], known_plays: KnownPlays
-    ) -> list[TweetablePlay]:
+    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Find any new plays that could be Tweetable, depending on the State."""
         pass
 

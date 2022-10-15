@@ -8,7 +8,6 @@ import requests
 from my_types import (
     CompletedGame,
     Game,
-    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -192,17 +191,11 @@ class NBAClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "dunked"
 
-    def get_tweetable_plays(
-        self, games: list[Game], known_plays: KnownPlays
-    ) -> list[TweetablePlay]:
+    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Get dunks we haven't processed yet and sort them by end_time."""
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            known_plays_for_this_game = known_plays.get(g.game_id, [])
-            known_play_ids_for_this_game = [
-                kp.play_id for kp in known_plays_for_this_game
-            ]
             try:
                 all_plays = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
@@ -232,7 +225,6 @@ class NBAClient(AbstractSportsClient):
 
                     tweetable_plays.append(
                         TweetablePlay(
-                            already_known=play_id in known_play_ids_for_this_game,
                             play_id=play_id,
                             game_id=g.game_id,
                             end_time=p["timeActual"],
