@@ -71,7 +71,7 @@ class BigQueryClient:
         if not games:
             return []
         query = f"""
-                SELECT play_id, game_id, player_name
+                SELECT play_id, game_id, player_name, season_phrase, tweet_id, next_letter, times_cycled
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
@@ -80,12 +80,23 @@ class BigQueryClient:
         results = self.client.query(query, job_config=self.job_config).result()
         return [KnownPlay(*r) for r in results]
 
+    def get_recent_plays_for_season_phrase(self, season_phrase: str) -> list[KnownPlay]:
+        query = f"""
+            SELECT play_id, game_id, player_name, season_phrase, tweet_id, next_letter, times_cycled
+            FROM mlb_alphabet_game.tweetable_plays
+            where sport = '{self.league_code}'
+            and season_phrase = '{season_phrase}'
+            order by completed_at desc limit 50
+        """
+        results = self.client.query(query, job_config=self.job_config).result()
+        return [KnownPlay(*r) for r in results]
+
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
             tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled)
             VALUES
-            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self.clean_player_name(tweetable_play.player_name)}',
+            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_player_name(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled})
             """
         print(q)
@@ -114,6 +125,11 @@ class BigQueryClient:
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
+    def delete_play_by_tweet_id(self, tweet_id: int) -> None:
+        q = f"DELETE FROM mlb_alphabet_game.tweetable_plays WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
+        print(q)
+        self.client.query(q, job_config=self.job_config).result()
+
     @property
     def _30_minutes_ago(self) -> str:
         """Get a time 30 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
@@ -121,5 +137,5 @@ class BigQueryClient:
         dt = dt - datetime.timedelta(minutes=30)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
-    def clean_player_name(self, player_name: str) -> str:
+    def _escape_player_name(self, player_name: str) -> str:
         return player_name.replace("'", "\\'")

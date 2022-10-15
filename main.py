@@ -11,7 +11,7 @@ from clients.nba_client import NBAClient
 from clients.nfl_client import NFLClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
-from utils import reconcile_plays
+from utils import calculate_plays_to_delete, reconcile_plays
 
 load_dotenv()
 
@@ -21,6 +21,7 @@ DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 
 def main(sports_client: AbstractSportsClient):
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=sports_client)
+    twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
 
     # Get games we have already completely process so we don't poll them again
     completed_games = bigquery_client.get_completed_games()
@@ -47,13 +48,30 @@ def main(sports_client: AbstractSportsClient):
 
     deleted_plays, new_tweetable_plays = reconcile_plays(known_plays, tweetable_plays)
 
-    # TODO: If some previously tweeted plays are now gone, we should delete the tweet and subsequent tweets, and reset the state
-    # We can then just call the process again and return early in this run
     if deleted_plays:
         print(f"Found deleted plays: {deleted_plays}")
-        # state.handle_deleted_plays(deleted_plays)
-        # main(sports_client)
-        # return
+        # Just handle the first element in the list. If there are more, we would handle them on further loops
+        first_deleted_play = deleted_plays[0]
+        recent_plays = bigquery_client.get_recent_plays_for_season_phrase(
+            first_deleted_play.season_phrase
+        )
+        tweet_ids_to_delete, last_good_play = calculate_plays_to_delete(
+            first_deleted_play, recent_plays
+        )
+        for tweet_id in tweet_ids_to_delete:
+            twitter_client.delete_tweet(tweet_id)
+            bigquery_client.delete_play_by_tweet_id(tweet_id)
+        # If no last good play, we must be at the beginning of the season period
+        if not last_good_play:
+            state._reset_state(relevant_games[0].season_period)
+            bigquery_client.update_state(state)
+        else:
+            state.current_letter = last_good_play.next_letter
+            state.times_cycled = last_good_play.times_cycled
+            bigquery_client.update_state(state)
+        # Just start over for this sport
+        main(sports_client)
+        return
 
     print(f"Found {len(new_tweetable_plays)} new tweetable plays")
 
@@ -62,7 +80,6 @@ def main(sports_client: AbstractSportsClient):
         bigquery_client.update_state(state)
         return
 
-    twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
     for p in new_tweetable_plays:
         matching_letters = state.find_matching_letters(p)
 

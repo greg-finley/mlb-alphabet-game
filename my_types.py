@@ -170,6 +170,10 @@ class KnownPlay:
     play_id: str
     game_id: str
     player_name: str
+    season_phrase: str
+    tweet_id: int
+    next_letter: str
+    times_cycled: int
 
 
 @dataclass

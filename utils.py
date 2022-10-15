@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 from my_types import KnownPlay, TweetablePlay
 
 
 def reconcile_plays(
     known_plays: list[KnownPlay], tweetable_plays: list[TweetablePlay]
 ) -> tuple[list[KnownPlay], list[TweetablePlay]]:
-    """Update the state with any new plays and return the deleted plays and new tweetable plays."""
     deleted_plays: list[KnownPlay] = []
     new_tweetable_plays: list[TweetablePlay] = []
     for play in known_plays:
@@ -30,3 +31,28 @@ def reconcile_plays(
             new_tweetable_plays.append(tp)
 
     return deleted_plays, new_tweetable_plays
+
+
+def calculate_plays_to_delete(
+    deleted_play: KnownPlay, recent_plays: list[KnownPlay]
+) -> tuple[list[int], KnownPlay | None]:
+
+    found_deleted_play = False
+    tweet_ids_to_delete: list[int] = []
+    last_good_play: KnownPlay | None = None
+    for play in recent_plays:
+        if found_deleted_play:
+            last_good_play = play
+            break
+        tweet_ids_to_delete.append(play.tweet_id)
+        if (
+            play.game_id == deleted_play.game_id
+            and play.play_id == deleted_play.play_id
+            and play.player_name == deleted_play.player_name
+        ):
+            found_deleted_play = True
+
+    if not found_deleted_play or not tweet_ids_to_delete:
+        raise Exception("Deleted play not found in recent plays")
+
+    return tweet_ids_to_delete, last_good_play

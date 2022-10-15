@@ -94,6 +94,11 @@ class TwitterClient:
                 state.tweet_id += 1
                 tweetable_play.tweet_id = state.tweet_id
 
+    def delete_tweet(self, tweet_id: int) -> None:
+        print("Deleting tweet", tweet_id)
+        if not self.dry_run:
+            self.api.destroy_status(tweet_id)
+
     def _alert(self, matching_letters: list[str]) -> str:
         if len(matching_letters) == 1:
             return ""
