@@ -197,11 +197,12 @@ class NFLClient(AbstractSportsClient):
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            response = requests.get(
+            payload = requests.get(
                 f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}"
             ).json()
+            g.payload = payload
 
-            box_score = response["boxscore"]
+            box_score = payload["boxscore"]
             # Turn the box score into a dict of player name and player id
             player_name_to_id: dict[str, int] = {}
             for k in box_score["players"]:
@@ -211,7 +212,7 @@ class NFLClient(AbstractSportsClient):
                             player["athlete"]["id"]
                         )
 
-            scoring_plays = response.get("scoringPlays", [])
+            scoring_plays = payload.get("scoringPlays", [])
             for p in scoring_plays:
                 play_id = str(p["id"])
                 if p["scoringType"]["name"] == "touchdown":

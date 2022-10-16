@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 
 from google.cloud import bigquery  # type: ignore
 from my_types import CompletedGame, Game, KnownPlay, State, TweetablePlay
@@ -63,6 +64,21 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
+    def snapshot_games(self, games: list[Game]) -> None:
+        games_with_payloads = [g for g in games if g.payload]
+        if not games_with_payloads:
+            return
+        print(f"Snapshotting {len(games_with_payloads)} games")
+        print(datetime.datetime.now())
+        for g in games_with_payloads:
+            q = f"""
+                INSERT INTO mlb_alphabet_game.game_snapshot (game_id, sport, snapshot_at, payload)
+                VALUES
+                ('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP(), SAFE.PARSE_JSON('{self._escape_string(json.dumps(g.payload))}'))
+                """
+            self.client.query(q, job_config=self.job_config).result()
+        print(datetime.datetime.now())
+
     def get_known_plays(self, games: list[Game]) -> list[KnownPlay]:
         """
         In prior runs, we should record which plays we've already processed.
@@ -96,7 +112,7 @@ class BigQueryClient:
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
             tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score)
             VALUES
-            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_player_name(tweetable_play.player_name)}',
+            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}')
             """
         print(q)
@@ -137,5 +153,5 @@ class BigQueryClient:
         dt = dt - datetime.timedelta(minutes=30)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
-    def _escape_player_name(self, player_name: str) -> str:
+    def _escape_string(self, player_name: str) -> str:
         return player_name.replace("'", "\\'")
