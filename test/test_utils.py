@@ -94,6 +94,7 @@ def test_reconcile_plays(
     tweetable_plays = [
         TweetablePlay(
             **d,
+            payload={},
             end_time="2022-10-15T03:13:14Z",
             image_name="Goal",
             tweet_phrase="scored a goal",
