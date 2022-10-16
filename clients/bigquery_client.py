@@ -65,19 +65,16 @@ class BigQueryClient:
             self.client.query(q, job_config=self.job_config).result()
 
     def snapshot_games(self, games: list[Game]) -> None:
-        games_with_payloads = [g for g in games if g.payload]
-        if not games_with_payloads:
-            return
-        print(f"Snapshotting {len(games_with_payloads)} games")
-        print(datetime.datetime.now())
-        for g in games_with_payloads:
+        """Snapshot games that had tweetable plays, so we can research bugs / changes more easily"""
+        print(f"Snapshotting {len(games)} games")
+        for g in games:
+            assert g.payload
             q = f"""
                 INSERT INTO mlb_alphabet_game.game_snapshot (game_id, sport, snapshot_at, payload)
                 VALUES
                 ('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP(), SAFE.PARSE_JSON('{self._escape_string(json.dumps(g.payload))}'))
                 """
             self.client.query(q, job_config=self.job_config).result()
-        print(datetime.datetime.now())
 
     def get_known_plays(self, games: list[Game]) -> list[KnownPlay]:
         """
