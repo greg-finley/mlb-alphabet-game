@@ -135,7 +135,7 @@ class BigQueryClient:
         self.client.query(q, job_config=self.job_config).result()
 
     def delete_play_by_tweet_id(self, tweet_id: int) -> None:
-        q = f"UPDATE mlb_alphabet_game.tweetable_plays SET deleted = true WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
+        q = f"UPDATE mlb_alphabet_game.tweetable_plays SET deleted = true, deleted_at = CURRENT_TIMESTAMP() WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
