@@ -101,9 +101,8 @@ class BigQueryClient:
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
-            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}', false)
-            )
-            """
+            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}'), false)
+        """
         print(
             "Adding tweetable play:",
             tweetable_play.play_id,
