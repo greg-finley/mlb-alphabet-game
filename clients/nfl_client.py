@@ -215,7 +215,7 @@ class NFLClient(AbstractSportsClient):
             for p in scoring_plays:
                 play_id = str(p["id"])
                 if p["scoringType"]["name"] == "touchdown":
-                    play_text = p["text"]
+                    play_text = p["text"].replace("Blocked Kick Recovered by ", "")
                     try:
                         # Get the player name from first two words of the play text
                         player_name = " ".join(play_text.split(" ")[:2])
