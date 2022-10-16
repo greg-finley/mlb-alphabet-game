@@ -64,15 +64,15 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
-    def snapshot_games(self, games: list[Game]) -> None:
-        """Snapshot games that had tweetable plays, so we can research bugs / changes more easily"""
-        print(f"Snapshotting {len(games)} games")
-        for g in games:
-            assert g.payload
+    def snapshot_raw_data(self, plays: list[TweetablePlay], games: list[Game]) -> None:
+        """Snapshot raw data for later analysis"""
+        print(f"Snapshotting {len(plays)} plays")
+        for p in plays:
+            relevant_game = next(g for g in games if g.game_id == p.game_id)
             q = f"""
-                INSERT INTO mlb_alphabet_game.game_snapshot (game_id, sport, snapshot_at, payload)
+                INSERT INTO mlb_alphabet_game.game_snapshot (game_id, play_id,  sport, snapshot_at, payload)
                 VALUES
-                ('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP(), SAFE.PARSE_JSON('{self._escape_string(json.dumps(g.payload))}'))
+                ('{relevant_game.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), SAFE.PARSE_JSON('{self._escape_string(json.dumps(relevant_game.payload))}'))
                 """
             self.client.query(q, job_config=self.job_config).result()
 
