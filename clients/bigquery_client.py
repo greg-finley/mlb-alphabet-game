@@ -94,10 +94,10 @@ class BigQueryClient:
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_player_name(tweetable_play.player_name)}',
-            '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled})
+            '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}')
             """
         print(q)
         self.client.query(q, job_config=self.job_config).result()
