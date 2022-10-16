@@ -96,8 +96,6 @@ def main(sports_client: AbstractSportsClient):
             bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
-    # Snapshot raw data for new plays
-    bigquery_client.snapshot_raw_data(new_tweetable_plays, games)
 
 
 def main_mlb():

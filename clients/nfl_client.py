@@ -200,7 +200,6 @@ class NFLClient(AbstractSportsClient):
             payload = requests.get(
                 f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}"
             ).json()
-            g.payload = payload
 
             box_score = payload["boxscore"]
             # Turn the box score into a dict of player name and player id
@@ -234,6 +233,7 @@ class NFLClient(AbstractSportsClient):
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
+                            payload=payload,
                             game_id=g.game_id,
                             end_time="",  # This API doesn't tell me the actual time, so nothing to sort on
                             image_name="Touchdown",

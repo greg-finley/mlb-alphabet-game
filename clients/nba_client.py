@@ -200,7 +200,6 @@ class NBAClient(AbstractSportsClient):
                 payload = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
                 ).json()
-                g.payload = payload
                 all_plays = payload["game"]["actions"]
             # Sometimes the game hasn't started yet
             except requests.JSONDecodeError:
@@ -229,6 +228,7 @@ class NBAClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
+                            payload=payload,
                             end_time=p["timeActual"],
                             image_name="Slam Dunk",
                             tweet_phrase=f"dunked. {random.choice(NBA_JAM_DUNK_PHRASES)}",

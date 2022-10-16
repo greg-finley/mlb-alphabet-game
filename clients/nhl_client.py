@@ -132,7 +132,6 @@ class NHLClient(AbstractSportsClient):
             payload = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()
-            g.payload = payload
             all_plays = payload["allPlays"]
             for p in all_plays:
                 play_id = str(p["about"]["eventId"])
@@ -156,6 +155,7 @@ class NHLClient(AbstractSportsClient):
                             TweetablePlay(
                                 play_id=play_id,
                                 game_id=g.game_id,
+                                payload=payload,
                                 image_name="Goal",
                                 tweet_phrase=self.short_tweet_phrase,
                                 player_name=scorer["player"]["fullName"],

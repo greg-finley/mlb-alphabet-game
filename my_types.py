@@ -152,6 +152,7 @@ class TweetablePlay:
 
     play_id: str
     game_id: str
+    payload: dict
     end_time: str
     image_name: str  # 2-Run Home Run
     tweet_phrase: str  # hit a 2-run dinger
@@ -194,7 +195,6 @@ class Game:
     home_team_id: int
     away_team_id: int
     season_period: SeasonPeriod
-    payload: dict | None = None
 
 
 @dataclass

@@ -162,7 +162,6 @@ class MLBClient(AbstractSportsClient):
             payload = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
             ).json()
-            g.payload = payload
             all_plays = payload["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
@@ -193,6 +192,7 @@ class MLBClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
+                            payload=payload,
                             image_name=image_name,
                             tweet_phrase=f"hit a {hit_name}",
                             player_name=p["matchup"]["batter"]["fullName"],

@@ -64,18 +64,6 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
-    def snapshot_raw_data(self, plays: list[TweetablePlay], games: list[Game]) -> None:
-        """Snapshot raw data for later analysis"""
-        print(f"Snapshotting {len(plays)} plays")
-        for p in plays:
-            relevant_game = next(g for g in games if g.game_id == p.game_id)
-            q = f"""
-                INSERT INTO mlb_alphabet_game.game_snapshot (game_id, play_id,  sport, snapshot_at, payload)
-                VALUES
-                ('{relevant_game.game_id}', '{p.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), SAFE.PARSE_JSON('{self._escape_string(json.dumps(relevant_game.payload))}'))
-                """
-            self.client.query(q, job_config=self.job_config).result()
-
     def get_known_plays(self, games: list[Game]) -> list[KnownPlay]:
         """
         In prior runs, we should record which plays we've already processed.
@@ -107,12 +95,19 @@ class BigQueryClient:
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
-            '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}')
+            '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
+            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}')
+            )
             """
-        print(q)
+        print(
+            "Adding tweetable play:",
+            tweetable_play.play_id,
+            tweetable_play.game_id,
+            tweetable_play.player_name,
+        )
         self.client.query(q, job_config=self.job_config).result()
 
     def get_initial_state(self) -> State:
