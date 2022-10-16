@@ -68,6 +68,7 @@ def main(sports_client: AbstractSportsClient):
         else:
             state.current_letter = last_good_play.next_letter
             state.times_cycled = last_good_play.times_cycled
+            state.tweet_id = last_good_play.tweet_id
             bigquery_client.update_state(state)
         # Just start over for this sport
         main(sports_client)
