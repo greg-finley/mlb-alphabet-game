@@ -76,6 +76,7 @@ class BigQueryClient:
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
+                and deleted = false
             """
         print(query)
         results = self.client.query(query, job_config=self.job_config).result()
@@ -87,6 +88,7 @@ class BigQueryClient:
             FROM mlb_alphabet_game.tweetable_plays
             where sport = '{self.league_code}'
             and season_phrase = '{season_phrase}'
+            and deleted = false
             order by completed_at desc limit 50
         """
         results = self.client.query(query, job_config=self.job_config).result()
@@ -95,11 +97,11 @@ class BigQueryClient:
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload, deleted)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
-            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}')
+            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}', false)
             )
             """
         print(
@@ -134,7 +136,7 @@ class BigQueryClient:
         self.client.query(q, job_config=self.job_config).result()
 
     def delete_play_by_tweet_id(self, tweet_id: int) -> None:
-        q = f"DELETE FROM mlb_alphabet_game.tweetable_plays WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
+        q = f"UPDATE mlb_alphabet_game.tweetable_plays SET deleted = true WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
