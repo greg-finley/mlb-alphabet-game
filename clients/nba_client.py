@@ -197,9 +197,11 @@ class NBAClient(AbstractSportsClient):
 
         for g in games:
             try:
-                all_plays = requests.get(
+                payload = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
-                ).json()["game"]["actions"]
+                ).json()
+                g.payload = payload
+                all_plays = payload["game"]["actions"]
             # Sometimes the game hasn't started yet
             except requests.JSONDecodeError:
                 continue

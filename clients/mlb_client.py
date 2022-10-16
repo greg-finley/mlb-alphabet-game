@@ -159,9 +159,11 @@ class MLBClient(AbstractSportsClient):
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            all_plays = requests.get(
+            payload = requests.get(
                 self.base_url + f"/game/{g.game_id}/playByPlay"
-            ).json()["allPlays"]
+            ).json()
+            g.payload = payload
+            all_plays = payload["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
                 if p["about"]["isComplete"] and p["result"]["eventType"] == "home_run":

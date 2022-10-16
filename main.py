@@ -96,6 +96,10 @@ def main(sports_client: AbstractSportsClient):
             bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
+    # Snapshot games that have new plays
+    bigquery_client.snapshot_games(
+        [g for g in games if g.game_id in [p.game_id for p in new_tweetable_plays]]
+    )
 
 
 def main_mlb():
