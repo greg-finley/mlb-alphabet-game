@@ -97,11 +97,11 @@ class BigQueryClient:
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload, deleted)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload, deleted, tweet_text)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
-            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}'), false)
+            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}'), false, '{self._escape_string(tweetable_play.tweet_text)}')
         """
         print(
             "Adding tweetable play:",
@@ -146,5 +146,5 @@ class BigQueryClient:
         dt = dt - datetime.timedelta(minutes=30)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
-    def _escape_string(self, player_name: str) -> str:
-        return player_name.replace("'", "\\'")
+    def _escape_string(self, string: str) -> str:
+        return string.replace("'", "\\'").replace("\n", " ")

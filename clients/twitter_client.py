@@ -47,6 +47,7 @@ class TwitterClient:
                 omit_score=True,
             )
         print(tweet_text)
+        tweetable_play.tweet_text = tweet_text
 
         if not self.dry_run:
             image_client = ImageClient()
@@ -82,6 +83,7 @@ class TwitterClient:
 
 {tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have the letter {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._score_with_spacing(tweetable_play.score)}"""
             print(status)
+            tweetable_play.tweet_text = status
             if not self.dry_run:
                 tweet = self.api.update_status(
                     status=status,

@@ -164,6 +164,7 @@ class TweetablePlay:
     season_period: SeasonPeriod
     season_phrase: str  # "in the 2022-23 season". Can be simplified once we don't need to support partial MLB season anymore.
     tweet_id: int | None = None
+    tweet_text: str = ""
 
 
 @dataclass
