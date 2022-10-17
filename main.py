@@ -83,6 +83,7 @@ def main(sports_client: AbstractSportsClient):
         return
 
     for p in new_tweetable_plays:
+        assert p.payload
         matching_letters = state.find_matching_letters(p)
 
         if matching_letters:
