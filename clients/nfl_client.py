@@ -203,11 +203,11 @@ class NFLClient(AbstractSportsClient):
 
             box_score = payload["boxscore"]
             # Turn the box score into a dict of player name and player id
-            player_name_to_id: dict[str, int] = {}
+            player_dict: dict[str, int] = {}
             for k in box_score["players"]:
                 for stat_category in k["statistics"]:
                     for player in stat_category["athletes"]:
-                        player_name_to_id[player["athlete"]["displayName"]] = int(
+                        player_dict[player["athlete"]["displayName"]] = int(
                             player["athlete"]["id"]
                         )
 
@@ -216,14 +216,22 @@ class NFLClient(AbstractSportsClient):
                 play_id = str(p["id"])
                 if p["scoringType"]["name"] == "touchdown":
                     play_text = p["text"].replace("Blocked Kick Recovered by ", "")
+                    first_two_words = " ".join(play_text.split(" ")[:2])
+                    first_three_words = " ".join(play_text.split(" ")[:3])
                     try:
-                        # Get the player name from first two words of the play text
-                        player_name = " ".join(play_text.split(" ")[:2])
-                        player_id = player_name_to_id[player_name]
+                        player_id = (
+                            player_dict.get(first_two_words)
+                            or player_dict.get(first_two_words + " Jr.")
+                            or player_dict[first_two_words + " Sr."]
+                        )
+                        player_name = first_two_words
                     except KeyError:
-                        # Try first three words
-                        player_name = " ".join(play_text.split(" ")[:3])
-                        player_id = player_name_to_id[player_name]
+                        player_id = (
+                            player_dict.get(first_three_words)
+                            or player_dict.get(first_three_words + " Jr.")
+                            or player_dict[first_three_words + " Sr."]
+                        )
+                        player_name = first_three_words
 
                     if play_text.startswith(f"{player_name} Pass for"):
                         # We have the quarterback name, just skip this play and get it on the next run
