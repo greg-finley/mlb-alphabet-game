@@ -225,6 +225,14 @@ class NFLClient(AbstractSportsClient):
                         player_name = " ".join(play_text.split(" ")[:3])
                         player_id = player_name_to_id[player_name]
 
+                    if play_text.startswith(f"{player_name} Pass for"):
+                        # We have the quarterback name, just skip this play and get it on the next run
+                        # First time:
+                        # Jalen Hurts Pass for 7 Yds, DeVonta Smith Pass From Jalen Hurts for 7 Yds, Trevon Diggs 1 Yd Pnlty
+                        # Second time:
+                        # DeVonta Smith Pass From Jalen Hurts for 7 Yds, shotgun TWO-POINT CONVERSION ATTEMPT. M.Sanders rushes up the middle. ATTEMPT FAILS.
+                        continue
+
                     period = self._period_to_string(p["period"]["number"])
                     clock = p["clock"]["displayValue"]
 
