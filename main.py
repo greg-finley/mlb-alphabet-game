@@ -72,7 +72,8 @@ def main(sports_client: AbstractSportsClient):
             bigquery_client.update_state(state)
         # Just start over for this sport
         main(sports_client)
-        return
+        # Raise exception to email us
+        raise Exception("Deleted play")
 
     print(f"Found {len(new_tweetable_plays)} new tweetable plays")
 
