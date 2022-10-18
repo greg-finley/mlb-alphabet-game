@@ -174,7 +174,7 @@ class NHLClient(AbstractSportsClient):
                                 player_id=scorer["player"]["id"],
                                 player_team_id=p["team"]["id"],
                                 end_time=p["about"]["dateTime"],
-                                tiebreaker=i,
+                                tiebreaker=0,
                                 score=score,
                                 season_period=g.season_period,
                                 season_phrase=self.season_phrase(g.season_period),

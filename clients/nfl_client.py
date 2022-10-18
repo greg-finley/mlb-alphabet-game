@@ -197,11 +197,11 @@ class NFLClient(AbstractSportsClient):
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            payload = requests.get(
+            base_payload = requests.get(
                 f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}"
             ).json()
 
-            box_score = payload["boxscore"]
+            box_score = base_payload["boxscore"]
             # Turn the box score into a dict of player name and player id
             player_dict: dict[str, int] = {}
             for k in box_score["players"]:
@@ -211,7 +211,10 @@ class NFLClient(AbstractSportsClient):
                             player["athlete"]["id"]
                         )
 
-            scoring_plays = payload.get("scoringPlays", [])
+            scoring_plays = base_payload.get("scoringPlays", [])
+            # For some reason BigQuery was saving the full payload as null sometimes.
+            # Just save only the two keys we need.
+            payload = {"box_score": box_score, "scoring_plays": scoring_plays}
             for p in scoring_plays:
                 play_id = str(p["id"])
                 if p["scoringType"]["name"] == "touchdown":
