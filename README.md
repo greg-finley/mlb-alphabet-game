@@ -21,5 +21,5 @@ Set `DRY_RUN=True` in `.env` to not restrict plays to the latest, don't actually
 # Poetry to requirements.txt
 
 ```shell
-poetry export -f requirements.txt --output requirements.txt
+poetry export -f requirements.txt --output requirements.txt --without-hashes
 ```
