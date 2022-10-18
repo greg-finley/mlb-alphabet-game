@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import datetime
 import os
 from typing import Any
 
@@ -127,6 +128,9 @@ class NHLClient(AbstractSportsClient):
         Get all goals that we haven't processed yet, only the goal scorer (not the assister).
         """
         tweetable_plays: list[TweetablePlay] = []
+        five_minutes_ago = datetime.datetime.now(
+            datetime.timezone.utc
+        ) - datetime.timedelta(minutes=5)
 
         for g in games:
             payload = requests.get(
@@ -134,8 +138,16 @@ class NHLClient(AbstractSportsClient):
             ).json()
             all_plays = payload["allPlays"]
             for p in all_plays:
-                play_id = str(p["about"]["eventId"])
-                if p["result"]["event"] == "Goal" and p.get("players"):
+                play_time = datetime.datetime.strptime(
+                    p["about"]["dateTime"],
+                    "%Y-%m-%dT%H:%M:%SZ",
+                ).replace(tzinfo=datetime.timezone.utc)
+                if (
+                    p["result"]["event"] == "Goal"
+                    and p.get("players")
+                    # Ensure play_time happened at least 5 minutes ago
+                    and play_time < five_minutes_ago
+                ):
                     scorer: Any = None
                     for i, player in enumerate(p["players"]):
                         if player["playerType"] != "Scorer":
@@ -153,7 +165,7 @@ class NHLClient(AbstractSportsClient):
 
                         tweetable_plays.append(
                             TweetablePlay(
-                                play_id=play_id,
+                                play_id=str(p["about"]["eventId"]),
                                 game_id=g.game_id,
                                 payload=payload,
                                 image_name="Goal",
