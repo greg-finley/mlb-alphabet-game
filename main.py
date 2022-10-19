@@ -50,6 +50,8 @@ def main(sports_client: AbstractSportsClient):
 
     if deleted_plays:
         print(f"Found deleted plays: {deleted_plays}")
+        print(f"Deleted plays tweetable_plays: {tweetable_plays}")
+        print(f"Deleted plays known_plays: {known_plays}")
         # Just handle the first element in the list. If there are more, we would handle them on further loops
         first_deleted_play = deleted_plays[0]
         recent_plays = bigquery_client.get_recent_plays_for_season_phrase(
