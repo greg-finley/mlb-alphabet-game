@@ -1,23 +1,28 @@
 from __future__ import annotations
 
-from my_types import KnownPlay, TweetablePlay
+from my_types import DeletedPlay, KnownPlay, TweetablePlay
 
 
 def reconcile_plays(
     known_plays: list[KnownPlay], tweetable_plays: list[TweetablePlay]
-) -> tuple[list[KnownPlay], list[TweetablePlay]]:
-    deleted_plays: list[KnownPlay] = []
+) -> tuple[list[DeletedPlay], list[TweetablePlay]]:
+    deleted_plays: list[DeletedPlay] = []
     new_tweetable_plays: list[TweetablePlay] = []
     for play in known_plays:
         for tp in tweetable_plays:
-            if (
-                play.game_id == tp.game_id
-                and play.play_id == tp.play_id
-                and play.player_name == tp.player_name
-            ):
+            if play.game_id == tp.game_id and play.play_id == tp.play_id:
+                if play.player_name != tp.player_name:
+                    deleted_plays.append(
+                        DeletedPlay(
+                            **play.__dict__,
+                            deleted_reason="Player name changed",
+                        )
+                    )
                 break
         else:
-            deleted_plays.append(play)
+            deleted_plays.append(
+                DeletedPlay(**play.__dict__, deleted_reason="Play not found")
+            )
 
     for tp in tweetable_plays:
         for play in known_plays:

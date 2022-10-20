@@ -199,6 +199,11 @@ class KnownPlay:
 
 
 @dataclass
+class DeletedPlay(KnownPlay):
+    deleted_reason: str
+
+
+@dataclass
 class ImageInput:
     player_name: str  # Charlie Blackmon
     player_id: int  # 453568
