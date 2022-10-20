@@ -61,8 +61,6 @@ class NBAClient(AbstractSportsClient):
             return SeasonPeriod.PLAYOFFS
         elif game_type_raw == "5":
             return SeasonPeriod.PLAYIN
-        print("!!!")
-        print(f"{type(game_type_raw)=}")
         raise ValueError(f"Unknown game type {game_type_raw}")
 
     @property
