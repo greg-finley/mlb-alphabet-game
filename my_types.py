@@ -152,7 +152,7 @@ class TweetablePlay:
 
     play_id: str
     game_id: str
-    payload: dict
+    payload: dict | None
     end_time: str
     image_name: str  # 2-Run Home Run
     tweet_phrase: str  # hit a 2-run dinger
@@ -165,6 +165,26 @@ class TweetablePlay:
     season_phrase: str  # "in the 2022-23 season". Can be simplified once we don't need to support partial MLB season anymore.
     tweet_id: int | None = None
     tweet_text: str = ""
+
+    def object_with_null_payload(self) -> TweetablePlay:
+        """Null out the payload if we need to print to logs"""
+        return TweetablePlay(
+            self.play_id,
+            self.game_id,
+            None,
+            self.end_time,
+            self.image_name,
+            self.tweet_phrase,
+            self.player_name,
+            self.player_id,
+            self.player_team_id,
+            self.tiebreaker,
+            self.score,
+            self.season_period,
+            self.season_phrase,
+            self.tweet_id,
+            self.tweet_text,
+        )
 
 
 @dataclass
