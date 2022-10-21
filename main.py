@@ -17,6 +17,7 @@ load_dotenv()
 
 
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
+DELETE_PLAYS = os.environ.get("DELETE_PLAYS", "false").lower() == "true"
 
 
 def main(sports_client: AbstractSportsClient):
@@ -48,7 +49,7 @@ def main(sports_client: AbstractSportsClient):
 
     deleted_plays, new_tweetable_plays = reconcile_plays(known_plays, tweetable_plays)
 
-    if deleted_plays:
+    if DELETE_PLAYS and deleted_plays:
         # Just handle the first element in the list. If there are more, we would handle them on further loops
         first_deleted_play = deleted_plays[0]
         print(f"Found deleted play: {first_deleted_play}")

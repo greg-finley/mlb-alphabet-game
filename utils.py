@@ -26,11 +26,7 @@ def reconcile_plays(
 
     for tp in tweetable_plays:
         for play in known_plays:
-            if (
-                play.game_id == tp.game_id
-                and play.play_id == tp.play_id
-                and play.player_name == tp.player_name
-            ):
+            if play.game_id == tp.game_id and play.play_id == tp.play_id:
                 break
         else:
             new_tweetable_plays.append(tp)

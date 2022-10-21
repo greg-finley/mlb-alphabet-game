@@ -69,9 +69,7 @@ from utils import calculate_plays_to_delete, reconcile_plays
             [
                 {"game_id": "1", "play_id": "1", "player_name": "Player 1"},
             ],
-            [
-                {"game_id": "1", "play_id": "1", "player_name": "Player 2"},
-            ],
+            [],  # Don't consider it a new play if the player name changed. If we are handling deleted plays, the element in deleted_plays with trump this anyways
         ),
     ],
 )
