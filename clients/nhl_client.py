@@ -145,8 +145,12 @@ class NHLClient(AbstractSportsClient):
                 if (
                     p["result"]["event"] == "Goal"
                     and p.get("players")
-                    # Ensure play_time happened at least 5 minutes ago
-                    and play_time < five_minutes_ago
+                    and (
+                        p["result"]["description"] != "Goal"
+                    )  # We have seen the player name flip if there is no detailed description
+                    and (
+                        play_time < five_minutes_ago
+                    )  # Ensure play_time happened at least 5 minutes ago
                 ):
                     scorer: Any = None
                     for i, player in enumerate(p["players"]):

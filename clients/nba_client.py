@@ -197,12 +197,11 @@ class NBAClient(AbstractSportsClient):
             try:
                 payload = requests.get(
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
-                ).json()
-                all_plays = payload["game"]["actions"]
+                ).json()["game"]["actions"]
             # Sometimes the game hasn't started yet
             except requests.JSONDecodeError:
                 continue
-            for p in all_plays:
+            for p in payload:
                 play_id = str(p["actionNumber"])
                 if p["actionType"] == "game" and p["subType"] == "end":
                     g.is_complete = True
