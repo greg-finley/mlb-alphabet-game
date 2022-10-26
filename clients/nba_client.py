@@ -199,7 +199,7 @@ class NBAClient(AbstractSportsClient):
                     f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
                 ).json()["game"]["actions"]
             # Sometimes the game hasn't started yet
-            except requests.JSONDecodeError:
+            except (requests.JSONDecodeError, requests.exceptions.ConnectionError):
                 continue
             for p in payload:
                 play_id = str(p["actionNumber"])
