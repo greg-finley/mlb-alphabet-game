@@ -144,7 +144,7 @@ class BigQueryClient:
     def null_out_old_payloads(self) -> None:
         """Periodically throw away the old payloads to keep the BigQuery table size down"""
         q = """UPDATE mlb_alphabet_game.tweetable_plays SET payload = null
-        WHERE completed_at < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 DAY);"""
+        WHERE payload is not null and completed_at < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 DAY);"""
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
