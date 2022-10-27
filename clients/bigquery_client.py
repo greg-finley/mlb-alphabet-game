@@ -52,6 +52,8 @@ class BigQueryClient:
             q = q[:-1]  # remove trailing comma
             print(q)
             self.client.query(q, job_config=self.job_config).result()
+            # Also null out old plays
+            self.null_out_old_payloads()
         if uncompleted_games:
             q = """
                 DELETE FROM mlb_alphabet_game.completed_games
@@ -136,6 +138,13 @@ class BigQueryClient:
 
     def delete_play_by_tweet_id(self, tweet_id: int) -> None:
         q = f"UPDATE mlb_alphabet_game.tweetable_plays SET deleted = true, deleted_at = CURRENT_TIMESTAMP() WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
+        print(q)
+        self.client.query(q, job_config=self.job_config).result()
+
+    def null_out_old_payloads(self) -> None:
+        """Periodically throw away the old payloads to keep the BigQuery table size down"""
+        q = """UPDATE mlb_alphabet_game.tweetable_plays SET payload = null
+        WHERE completed_at < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 DAY);"""
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
