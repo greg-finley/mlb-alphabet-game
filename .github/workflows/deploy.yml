@@ -24,8 +24,8 @@ jobs:
       run: DRY_RUN=True poetry run python mlb_dryrun.py
     - id: 'dry-nhl'
       run: DRY_RUN=True poetry run python nhl_dryrun.py
-    - id: 'dry-nba'
-      run: DRY_RUN=True poetry run python nba_dryrun.py
+    # - id: 'dry-nba'
+    #  run: DRY_RUN=True poetry run python nba_dryrun.py
     - id: 'dry-nfl'
       run: DRY_RUN=True poetry run python nfl_dryrun.py
 
