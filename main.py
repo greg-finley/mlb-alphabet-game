@@ -138,5 +138,5 @@ def main_nfl():
 def run(event, context):
     main_mlb()
     main_nhl()
-    main_nba()
     main_nfl()
+    main_nba()
