@@ -23,12 +23,12 @@ class BigQueryClient:
             order by completed_at desc limit 100
         """
         results = self.client.query(query, job_config=self.job_config).result()
-        # Keep polling games until 30 minutes after they have been marked completed,
+        # Keep polling games until 15 minutes after they have been marked completed,
         # in case a call gets overturned or something
         return [
             CompletedGame(
                 game_id=r.game_id,
-                recently_completed=not str(r.completed_at) < self._30_minutes_ago,
+                recently_completed=not str(r.completed_at) < self._15_minutes_ago,
             )
             for r in results
         ]
@@ -149,10 +149,10 @@ class BigQueryClient:
         self.client.query(q, job_config=self.job_config).result()
 
     @property
-    def _30_minutes_ago(self) -> str:
-        """Get a time 30 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
+    def _15_minutes_ago(self) -> str:
+        """Get a time 10 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
         dt = datetime.datetime.now(datetime.timezone.utc)
-        dt = dt - datetime.timedelta(minutes=30)
+        dt = dt - datetime.timedelta(minutes=15)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
     def _escape_string(self, string: str) -> str:
