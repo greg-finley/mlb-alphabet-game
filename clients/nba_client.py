@@ -70,6 +70,10 @@ class NBAClient(AbstractSportsClient):
         yesterday_str = (
             f"{yesterday.month}/{yesterday.day}/{yesterday.year} 12:00:00 AM"
         )
+        two_days_ago = today - datetime.timedelta(days=2)
+        two_days_ago_str = (
+            f"{two_days_ago.month}/{two_days_ago.day}/{two_days_ago.year} 12:00:00 AM"
+        )
         tomorrow = today + datetime.timedelta(days=1)
         tomorrow_str = f"{tomorrow.month}/{tomorrow.day}/{tomorrow.year} 12:00:00 AM"
         today_str = f"{today.month}/{today.day}/{today.year} 12:00:00 AM"
@@ -87,7 +91,12 @@ class NBAClient(AbstractSportsClient):
             else:
                 old_completed_game_ids.append(cg.game_id)
         for d in game_dates:
-            if d["gameDate"] in [tomorrow_str, today_str, yesterday_str]:
+            if d["gameDate"] in [
+                tomorrow_str,
+                today_str,
+                yesterday_str,
+                two_days_ago_str,
+            ]:
                 for g in d["games"]:
                     game_id = g["gameId"]
                     assert type(game_id) == str
