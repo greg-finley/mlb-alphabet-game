@@ -51,17 +51,18 @@ class NBAClient(AbstractSportsClient):
     def season_period_override(self) -> str | None:
         return None
 
-    def season_period(self, game_type_raw: str) -> SeasonPeriod:
-        if game_type_raw == "1":
+    def season_period(self, game_id: str) -> SeasonPeriod:
+        game_prefix = game_id[:3]
+        if game_prefix == "001":
             return SeasonPeriod.PRESEASON
         # 2 = regular season, 3 = all-star game; treat the all-star game as part of the regular season
-        elif game_type_raw in ["2", "3"]:
+        elif game_prefix in ["002", "003"]:
             return SeasonPeriod.REGULAR_SEASON
-        elif game_type_raw == "4":
+        elif game_prefix == "004":
             return SeasonPeriod.PLAYOFFS
-        elif game_type_raw == "5":
+        elif game_prefix == "005":
             return SeasonPeriod.PLAYIN
-        raise ValueError(f"Unknown game type {game_type_raw}")
+        raise ValueError(f"Unknown game prefix {game_prefix}")
 
     @property
     def alphabet_game_name(self) -> str:
@@ -69,13 +70,18 @@ class NBAClient(AbstractSportsClient):
 
     def get_current_games(self, completed_games: list[CompletedGame]) -> list[Game]:
         today = datetime.date.today()
-        yesterday_str = (today - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-        tomorrow_str = (today + datetime.timedelta(days=1)).strftime("%Y-%m-%d")
-        today_str = today.strftime("%Y-%m-%d")
+        yesterday = today - datetime.timedelta(days=1)
+        # yesterday_str, like 9/30/2022 12:00:00 AM
+        yesterday_str = (
+            f"{yesterday.month}/{yesterday.day}/{yesterday.year} 12:00:00 AM"
+        )
+        tomorrow = today + datetime.timedelta(days=1)
+        tomorrow_str = f"{tomorrow.month}/{tomorrow.day}/{tomorrow.year} 12:00:00 AM"
+        today_str = f"{today.month}/{today.day}/{today.year} 12:00:00 AM"
 
-        all_games = requests.get(
-            f"https://data.nba.net/prod/v1/{self.season_year}/schedule.json"
-        ).json()["league"]["standard"]
+        game_dates = requests.get(
+            "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json"
+        ).json()["leagueSchedule"]["gameDates"]
 
         games = []
         old_completed_game_ids: list[str] = []
@@ -85,25 +91,24 @@ class NBAClient(AbstractSportsClient):
                 recent_completed_game_ids.append(cg.game_id)
             else:
                 old_completed_game_ids.append(cg.game_id)
-        for g in all_games:
-            game_id = g["gameId"]
-            assert type(game_id) == str
-            if (
-                g["startTimeUTC"][:10] in [yesterday_str, today_str, tomorrow_str]
-                and game_id not in old_completed_game_ids
-            ):
-                games.append(
-                    Game(
-                        game_id=g["gameId"],
-                        is_complete=g["statusNum"] == 3,
-                        is_already_marked_as_complete=(
-                            game_id in recent_completed_game_ids
-                        ),
-                        home_team_id=g["hTeam"]["teamId"],
-                        away_team_id=g["vTeam"]["teamId"],
-                        season_period=self.season_period(str(g["seasonStageId"])),
-                    )
-                )
+        for d in game_dates:
+            if d["gameDate"] in [tomorrow_str, today_str, yesterday_str]:
+                for g in d["games"]:
+                    game_id = g["gameId"]
+                    assert type(game_id) == str
+                    if game_id not in old_completed_game_ids:
+                        games.append(
+                            Game(
+                                game_id=g["gameId"],
+                                is_complete=g["gameStatus"] == 3,
+                                is_already_marked_as_complete=(
+                                    game_id in recent_completed_game_ids
+                                ),
+                                home_team_id=g["homeTeam"]["teamId"],
+                                away_team_id=g["awayTeam"]["teamId"],
+                                season_period=self.season_period(game_id),
+                            )
+                        )
         return games
 
     @property
