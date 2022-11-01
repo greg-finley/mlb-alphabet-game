@@ -7,7 +7,6 @@ from enum import Enum
 class SeasonPeriod(Enum):
     PRESEASON = "preseason"
     REGULAR_SEASON = "season"
-    PLAYIN = "play-in games"  # NBA only
     PLAYOFFS = "playoffs"
 
 
@@ -52,12 +51,11 @@ class State:
 
         has_preseason = SeasonPeriod.PRESEASON in season_periods
         has_regular_season = SeasonPeriod.REGULAR_SEASON in season_periods
-        has_playin = SeasonPeriod.PLAYIN in season_periods
         has_playoffs = SeasonPeriod.PLAYOFFS in season_periods
 
         if len(season_periods) > 2:
             print(
-                f"{self.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
+                f"{self.season=} {has_preseason=} {has_regular_season=} {has_playoffs=}"
             )
             raise ValueError(
                 "Found more than 2 season periods in the same set of games"
@@ -69,42 +67,20 @@ class State:
                 return games
             if has_regular_season and self.season == SeasonPeriod.REGULAR_SEASON.value:
                 return games
-            if has_playin and self.season == SeasonPeriod.PLAYIN.value:
-                return games
             if has_playoffs and self.season == SeasonPeriod.PLAYOFFS.value:
                 return games
         # If we think it's preseason and we see season games, reset the state and filter out any remaining preseason games
         if (
             self.season == SeasonPeriod.PRESEASON.value
             and has_regular_season
-            and not has_playin
             and not has_playoffs
         ):
             self._reset_state(SeasonPeriod.REGULAR_SEASON)
             return [g for g in games if g.season_period == SeasonPeriod.REGULAR_SEASON]
-        # If we think it's regular season and we see playin games, reset the state and filter out any remaining regular season games
-        elif (
-            self.season == SeasonPeriod.REGULAR_SEASON.value
-            and has_playin
-            and not has_playoffs
-            and not has_preseason
-        ):
-            self._reset_state(SeasonPeriod.PLAYIN)
-            return [g for g in games if g.season_period == SeasonPeriod.PLAYIN]
         # If we think it's regular season and we see playoff games, reset the state and filter out any remaining regular season games
         elif (
             self.season == SeasonPeriod.REGULAR_SEASON.value
             and has_playoffs
-            and not has_playin
-            and not has_preseason
-        ):
-            self._reset_state(SeasonPeriod.PLAYOFFS)
-            return [g for g in games if g.season_period == SeasonPeriod.PLAYOFFS]
-        # If we think it's the playin games and we see playoff games, reset the state and filter out any remaining playin games
-        elif (
-            self.season == SeasonPeriod.PLAYIN.value
-            and has_playoffs
-            and not has_regular_season
             and not has_preseason
         ):
             self._reset_state(SeasonPeriod.PLAYOFFS)
@@ -114,7 +90,6 @@ class State:
             self.season == SeasonPeriod.PLAYOFFS.value
             and has_preseason
             and not has_regular_season
-            and not has_playin
             and not has_playoffs
         ):
             self._reset_state(SeasonPeriod.PRESEASON)
@@ -123,7 +98,6 @@ class State:
         elif (
             self.season == SeasonPeriod.REGULAR_SEASON.value
             and has_preseason
-            and not has_playin
             and not has_playoffs
         ):
             regular_season_games: list[Game] = []
@@ -135,7 +109,7 @@ class State:
             return regular_season_games
         else:
             print(
-                f"{self.season=} {has_preseason=} {has_regular_season=} {has_playin=} {has_playoffs=}"
+                f"{self.season=} {has_preseason=} {has_regular_season=} {has_playoffs=}"
             )
             raise ValueError("Unexpected season period change")
 
