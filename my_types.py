@@ -156,7 +156,7 @@ class TweetablePlay:
     end_time: str
     image_name: str  # 2-Run Home Run
     tweet_phrase: str  # hit a 2-run dinger
-    player_name: str
+    player_name: str  # In NBA, we will set to empty string and then look up the name if it's a play we are tweeting this time
     player_id: int
     player_team_id: int
     tiebreaker: int  # Hockey can have multiple scorers per play, so we need a tiebreaker

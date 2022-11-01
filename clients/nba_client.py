@@ -15,11 +15,6 @@ from my_types import (
 
 from clients.abstract_sports_client import AbstractSportsClient
 
-
-class UnknownPlayerError(Exception):
-    pass
-
-
 NBA_JAM_DUNK_PHRASES: list[str] = [
     "Hey come on, the rim has feelings too",
     "He's on fire",
@@ -221,11 +216,6 @@ class NBAClient(AbstractSportsClient):
                         print(f"Error getting score for {g.game_id}: {e}")
                         score = ""
 
-                    try:
-                        player_name = self._get_player_name(player_id)
-                    except UnknownPlayerError:
-                        continue
-
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
@@ -234,7 +224,7 @@ class NBAClient(AbstractSportsClient):
                             end_time=p["timeActual"],
                             image_name="Slam Dunk",
                             tweet_phrase=f"dunked. {random.choice(NBA_JAM_DUNK_PHRASES)}",
-                            player_name=player_name,
+                            player_name="",  # Look it up later if we end up tweeting this play
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play
@@ -260,21 +250,18 @@ class NBAClient(AbstractSportsClient):
 
     def _get_player_name(self, player_id: int) -> str:
         # Get the player name from the title tag from a url like https://www.nba.com/player/1629630
-        try:
-            if self.known_players.get(player_id):
-                return self.known_players[player_id]
-            else:
-                player_name = (
-                    requests.get(f"https://www.nba.com/player/{player_id}")
-                    .text.split("<title>")[1]
-                    .split("</title>")[0]
-                    .split(" |")[0]
-                    .replace("&#x27;", "'")
-                )
-                self.known_players[player_id] = player_name
-                return player_name
-        except IndexError:
-            raise UnknownPlayerError(f"Unknown player {player_id}")
+        if self.known_players.get(player_id):
+            return self.known_players[player_id]
+        else:
+            player_name = (
+                requests.get(f"https://www.nba.com/player/{player_id}")
+                .text.split("<title>")[1]
+                .split("</title>")[0]
+                .split(" |")[0]
+                .replace("&#x27;", "'")
+            )
+            self.known_players[player_id] = player_name
+            return player_name
 
     def _clean_clock(self, clock: str) -> str:
         """Change a time like PT06M40.00S to 06:40."""

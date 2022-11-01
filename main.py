@@ -50,6 +50,9 @@ def main(sports_client: AbstractSportsClient):
     deleted_plays, new_tweetable_plays = reconcile_plays(known_plays, tweetable_plays)
 
     if DELETE_PLAYS and deleted_plays:
+        raise Exception(
+            "Deleting plays will have some issues, like NBA player names are not known at this point"
+        )
         # Just handle the first element in the list. If there are more, we would handle them on further loops
         first_deleted_play = deleted_plays[0]
         print(f"Found deleted play: {first_deleted_play}")
@@ -91,6 +94,11 @@ def main(sports_client: AbstractSportsClient):
 
     for p in new_tweetable_plays:
         assert p.payload
+
+        # NBA player name lookup is expensive, so do it only for new tweetable plays
+        if isinstance(sports_client, NBAClient):
+            p.player_name = sports_client._get_player_name(p.player_id)
+
         matching_letters = state.find_matching_letters(p)
 
         if matching_letters:
