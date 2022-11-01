@@ -85,6 +85,10 @@ def main(sports_client: AbstractSportsClient):
         # Raise exception to email us
         raise Exception("Deleted play")
 
+    # Keep only 5 tweetable plays in dry run to speed things up
+    if DRY_RUN:
+        new_tweetable_plays = new_tweetable_plays[:5]
+
     print(f"Found {len(new_tweetable_plays)} new tweetable plays")
 
     if not new_tweetable_plays:
