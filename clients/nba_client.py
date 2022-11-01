@@ -41,7 +41,7 @@ NBA_JAM_DUNK_PHRASES: list[str] = [
 class NBAClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
         self.dry_run = dry_run
-        self.all_players: list = []  # Cache if we pulled it once
+        self.known_players: dict = {}  # Cache
 
     @property
     def league_code(self) -> str:
@@ -259,26 +259,22 @@ class NBAClient(AbstractSportsClient):
         ).content
 
     def _get_player_name(self, player_id: int) -> str:
-        """
-        Ideally better to grab the name directly by id instead of getting this
-        huge list, but I couldn't find such an endpoint.
-        """
-        if not self.all_players:
-            all_players = requests.get(
-                f"https://stats.nba.com/stats/playerindex?College=&Country=&DraftPick=&DraftRound=&DraftYear=&Height=&Historical=1&LeagueID=00&Season={self.season_years}&SeasonType=Regular%20Season&TeamID=0&Weight=",
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-                    "Origin": "https://www.nba.com",
-                    "Referer": "https://www.nba.com/",
-                },
-            ).json()["resultSets"][0]["rowSet"]
-            self.all_players = all_players
-        else:
-            all_players = self.all_players
-        for p in all_players:
-            if p[0] == player_id:
-                return p[2] + " " + p[1]
-        raise UnknownPlayerError(f"Could not find player with id {player_id}")
+        # Get the player name from the title tag from a url like https://www.nba.com/player/1629630
+        try:
+            if self.known_players.get(player_id):
+                return self.known_players[player_id]
+            else:
+                player_name = (
+                    requests.get(f"https://www.nba.com/player/{player_id}")
+                    .text.split("<title>")[1]
+                    .split("</title>")[0]
+                    .split(" |")[0]
+                    .replace("&#x27;", "'")
+                )
+                self.known_players[player_id] = player_name
+                return player_name
+        except IndexError:
+            raise UnknownPlayerError(f"Unknown player {player_id}")
 
     def _clean_clock(self, clock: str) -> str:
         """Change a time like PT06M40.00S to 06:40."""
