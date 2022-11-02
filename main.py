@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import os
 
 from dotenv import load_dotenv
@@ -20,7 +21,7 @@ DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 DELETE_PLAYS = os.environ.get("DELETE_PLAYS", "false").lower() == "true"
 
 
-def main(sports_client: AbstractSportsClient):
+async def main(sports_client: AbstractSportsClient):
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=sports_client)
     twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
 
@@ -44,7 +45,7 @@ def main(sports_client: AbstractSportsClient):
 
     known_plays = bigquery_client.get_known_plays(relevant_games)
     print(f"Found {len(known_plays)} known plays")
-    tweetable_plays = sports_client.get_tweetable_plays(relevant_games)
+    tweetable_plays = await sports_client.get_tweetable_plays(relevant_games)
     print(f"Found {len(tweetable_plays)} tweetable plays")
 
     deleted_plays, new_tweetable_plays = reconcile_plays(known_plays, tweetable_plays)
@@ -119,36 +120,36 @@ def main(sports_client: AbstractSportsClient):
     bigquery_client.set_completed_games(games)
 
 
-def main_mlb():
+async def main_mlb():
     print("Starting MLB")
     mlb_client = MLBClient(dry_run=DRY_RUN)
-    main(mlb_client)
+    await main(mlb_client)
     print("Ending MLB")
 
 
-def main_nhl():
+async def main_nhl():
     print("Starting NHL")
     nhl_client = NHLClient(dry_run=DRY_RUN)
-    main(nhl_client)
+    await main(nhl_client)
     print("Ending NHL")
 
 
-def main_nba():
+async def main_nba():
     print("Starting NBA")
     nba_client = NBAClient(dry_run=DRY_RUN)
-    main(nba_client)
+    await main(nba_client)
     print("Ending NBA")
 
 
-def main_nfl():
+async def main_nfl():
     print("Starting NFL")
     nfl_client = NFLClient(dry_run=DRY_RUN)
-    main(nfl_client)
+    await main(nfl_client)
     print("Ending NFL")
 
 
 def run(event, context):
-    main_mlb()
-    main_nhl()
-    main_nfl()
-    main_nba()
+    asyncio.run(main_mlb())
+    asyncio.run(main_nhl())
+    asyncio.run(main_nfl())
+    asyncio.run(main_nba())

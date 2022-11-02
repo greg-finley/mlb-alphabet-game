@@ -35,7 +35,7 @@ NBA_JAM_DUNK_PHRASES: list[str] = [
 
 class NBAClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
-        self.dry_run = dry_run
+        super().__init__(dry_run)
         self.known_players: dict = {}  # Cache
 
     @property
@@ -188,18 +188,26 @@ class NBAClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "dunked"
 
-    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Get dunks we haven't processed yet and sort them by end_time."""
+        await self.gather_with_concurrency(
+            self.session,
+            *[
+                self.get_async(
+                    f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json",
+                    self.session,
+                    g,
+                )
+                for g in games
+            ],
+        )
+
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            try:
-                payload = requests.get(
-                    f"https://cdn.nba.com/static/json/liveData/playbyplay/playbyplay_{g.game_id}.json"
-                ).json()["game"]["actions"]
-            # Sometimes the game hasn't started yet
-            except (requests.JSONDecodeError, requests.exceptions.ConnectionError):
+            if not g.payload:
                 continue
+            payload = g.payload["game"]["actions"]
             for p in payload:
                 play_id = str(p["actionNumber"])
                 if p["actionType"] == "game" and p["subType"] == "end":

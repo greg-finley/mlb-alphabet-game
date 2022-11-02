@@ -23,8 +23,7 @@ HOME_RUN_NAMES = [
 
 class MLBClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
-        self.dry_run = dry_run
-
+        super().__init__(dry_run)
         self.base_url = "https://statsapi.mlb.com/api/v1"
 
     @property
@@ -154,15 +153,25 @@ class MLBClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "hit a homer"
 
-    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Get home runs we haven't processed yet and sort them by end_time."""
+        await self.gather_with_concurrency(
+            self.session,
+            *[
+                self.get_async(
+                    self.base_url + f"/game/{g.game_id}/playByPlay",
+                    self.session,
+                    g,
+                )
+                for g in games
+            ],
+        )
+
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            payload = requests.get(
-                self.base_url + f"/game/{g.game_id}/playByPlay"
-            ).json()
-            all_plays = payload["allPlays"]
+            assert g.payload
+            all_plays = g.payload["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
                 if p["about"]["isComplete"] and p["result"]["eventType"] == "home_run":
@@ -192,7 +201,7 @@ class MLBClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
-                            payload=payload,
+                            payload=g.payload,
                             image_name=image_name,
                             tweet_phrase=f"hit a {hit_name}",
                             player_name=p["matchup"]["batter"]["fullName"],

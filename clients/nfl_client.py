@@ -17,7 +17,7 @@ from clients.abstract_sports_client import AbstractSportsClient
 
 class NFLClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
-        self.dry_run = dry_run
+        super().__init__(dry_run)
 
     @property
     def season_year(self) -> str:
@@ -192,16 +192,26 @@ class NFLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a touchdown"
 
-    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Get touchdowns we haven't processed yet and sort them by end_time."""
+        await self.gather_with_concurrency(
+            self.session,
+            *[
+                self.get_async(
+                    f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}",
+                    self.session,
+                    g,
+                )
+                for g in games
+            ],
+        )
+
         tweetable_plays: list[TweetablePlay] = []
 
         for g in games:
-            base_payload = requests.get(
-                f"http://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event={g.game_id}"
-            ).json()
+            assert g.payload
 
-            box_score = base_payload["boxscore"]
+            box_score = g.payload["boxscore"]
             # Turn the box score into a dict of player name and player id
             player_dict: dict[str, int] = {}
             for k in box_score["players"]:
@@ -211,7 +221,7 @@ class NFLClient(AbstractSportsClient):
                             player["athlete"]["id"]
                         )
 
-            scoring_plays = base_payload.get("scoringPlays", [])
+            scoring_plays = g.payload.get("scoringPlays", [])
             # For some reason BigQuery was saving the full payload as null sometimes.
             # Just save only the two keys we need.
             payload = {"box_score": box_score, "scoring_plays": scoring_plays}

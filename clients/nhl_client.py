@@ -12,7 +12,7 @@ from clients.abstract_sports_client import AbstractSportsClient
 
 class NHLClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
-        self.dry_run = dry_run
+        super().__init__(dry_run)
         self.base_url = "https://statsapi.web.nhl.com/api/v1"
 
     @property
@@ -123,7 +123,7 @@ class NHLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a goal"
 
-    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """
         Get all goals that we haven't processed yet, only the goal scorer (not the assister).
         """
@@ -132,12 +132,21 @@ class NHLClient(AbstractSportsClient):
             datetime.timezone.utc
         ) - datetime.timedelta(minutes=5)
 
+        await self.gather_with_concurrency(
+            self.session,
+            *[
+                self.get_async(
+                    self.base_url + f"/game/{g.game_id}/playByPlay",
+                    self.session,
+                    g,
+                )
+                for g in games
+            ],
+        )
+
         for g in games:
-            payload = requests.get(
-                self.base_url + f"/game/{g.game_id}/playByPlay"
-            ).json()
-            all_plays = payload["allPlays"]
-            for p in all_plays:
+            assert g.payload
+            for p in g.payload["allPlays"]:
                 play_time = datetime.datetime.strptime(
                     p["about"]["dateTime"],
                     "%Y-%m-%dT%H:%M:%SZ",
@@ -171,7 +180,7 @@ class NHLClient(AbstractSportsClient):
                             TweetablePlay(
                                 play_id=str(p["about"]["eventId"]),
                                 game_id=g.game_id,
-                                payload=payload,
+                                payload=g.payload,
                                 image_name="Goal",
                                 tweet_phrase=self.short_tweet_phrase,
                                 player_name=scorer["player"]["fullName"],

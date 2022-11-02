@@ -195,6 +195,7 @@ class Game:
     home_team_id: int
     away_team_id: int
     season_period: SeasonPeriod
+    payload: dict | None = None
 
 
 @dataclass

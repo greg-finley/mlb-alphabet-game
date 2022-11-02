@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import datetime
 from abc import ABC, abstractmethod
 
+import aiohttp
 import requests
+from aiohttp.client_exceptions import ContentTypeError
 from my_types import (
     CompletedGame,
     Game,
@@ -14,10 +17,11 @@ from my_types import (
 
 
 class AbstractSportsClient(ABC):
-    @abstractmethod
     def __init__(self, dry_run: bool):
-        self.base_url = ""
-        pass
+        self.dry_run = dry_run
+        self.conn = aiohttp.TCPConnector(ttl_dns_cache=300)
+        self.session = aiohttp.ClientSession(connector=self.conn)
+        self.base_url = ""  # Overriden in NHL and MLB
 
     @property
     @abstractmethod
@@ -146,7 +150,7 @@ class AbstractSportsClient(ABC):
         pass
 
     @abstractmethod
-    def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
         """Find any new plays that could be Tweetable, depending on the State."""
         pass
 
@@ -164,3 +168,21 @@ class AbstractSportsClient(ABC):
             return "OT"
         else:
             return f"{period - 4}OT"
+
+    async def gather_with_concurrency(self, session, *tasks):
+        semaphore = asyncio.Semaphore(40)
+
+        async def sem_task(task):
+            async with semaphore:
+                return await task
+
+        await asyncio.gather(*(sem_task(task) for task in tasks))
+        await session.close()
+
+    async def get_async(self, url, session, g: Game):
+        async with session.get(url) as response:
+            try:
+                obj = await response.json()
+                g.payload = obj
+            except (ContentTypeError):
+                pass
