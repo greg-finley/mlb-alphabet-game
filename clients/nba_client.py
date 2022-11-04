@@ -260,13 +260,17 @@ class NBAClient(AbstractSportsClient):
         if self.known_players.get(player_id):
             return self.known_players[player_id]
         else:
-            player_name = (
-                requests.get(f"https://www.nba.com/player/{player_id}")
-                .text.split("<title>")[1]
-                .split("</title>")[0]
-                .split(" |")[0]
-                .replace("&#x27;", "'")
-            )
+            try:
+                player_name = (
+                    requests.get(f"https://www.nba.com/player/{player_id}")
+                    .text.split("<title>")[1]
+                    .split("</title>")[0]
+                    .split(" |")[0]
+                    .replace("&#x27;", "'")
+                )
+            except IndexError:
+                print(f"Index error for {player_id}")
+                raise
             self.known_players[player_id] = player_name
             return player_name
 
