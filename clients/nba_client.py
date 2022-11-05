@@ -15,6 +15,11 @@ from my_types import (
 
 from clients.abstract_sports_client import AbstractSportsClient
 
+
+class PlayerLookupError(Exception):
+    pass
+
+
 NBA_JAM_DUNK_PHRASES: list[str] = [
     "Hey come on, the rim has feelings too",
     "He's on fire",
@@ -270,7 +275,7 @@ class NBAClient(AbstractSportsClient):
                 )
             except IndexError:
                 print(f"Index error for {player_id}")
-                raise
+                raise PlayerLookupError(f"Couldn't find player {player_id}")
             self.known_players[player_id] = player_name
             return player_name
 

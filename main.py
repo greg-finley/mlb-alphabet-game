@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.bigquery_client import BigQueryClient
 from clients.mlb_client import MLBClient
-from clients.nba_client import NBAClient
+from clients.nba_client import NBAClient, PlayerLookupError
 from clients.nfl_client import NFLClient
 from clients.nhl_client import NHLClient
 from clients.twitter_client import TwitterClient
@@ -102,7 +102,11 @@ async def main(sports_client: AbstractSportsClient):
 
         # NBA player name lookup is expensive, so do it only for new tweetable plays
         if isinstance(sports_client, NBAClient):
-            p.player_name = sports_client._get_player_name(p.player_id)
+            try:
+                p.player_name = sports_client._get_player_name(p.player_id)
+            except PlayerLookupError:
+                # The way we get player name is slightly flaky. If we can't find it, just skip and get it next time
+                continue
 
         matching_letters = state.find_matching_letters(p)
 
