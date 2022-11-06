@@ -28,6 +28,8 @@ i.e. to get 2 tweets about the NFL from before 1667525177, run:
 curl 'https://us-central1-greg-finley.cloudfunctions.net/alphabet-game-plays-api?limit=2&sport=NFL&before_ts=1667525177'
 ```
 
+The code powering the API can be found here: https://github.com/greg-finley/alphabet-game-plays-api
+
 # Google Cloud Function
 
 This code is run in a Google Cloud Function, triggered every 2 minutes via Google Cloud Scheduler. Keep a prior state in Google BigQuery (cheaper than making a Postgres instance in the cloud, though Postgres is of course the better choice) of the target letter, the number of times we have cycled through the alphabet, and the season period (preseason, regular season, playoffs). As we poll for today's plays, process any tweetable plays we have not seen before. Tweet a picture if the player's name matches the target letter, or reply to the previous thread if not.
