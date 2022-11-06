@@ -18,6 +18,7 @@ from my_types import (
 class NFLClient(AbstractSportsClient):
     def __init__(self, dry_run: bool):
         super().__init__(dry_run)
+        self.known_rosters: dict = {}
 
     @property
     def season_year(self) -> str:
@@ -212,37 +213,30 @@ class NFLClient(AbstractSportsClient):
             assert g.payload
 
             box_score = g.payload["boxscore"]
-            # Turn the box score into a dict of player name and player id
-            player_dict: dict[str, int] = {"Andrew Van Ginkel": 3133487}
-            for k in box_score["players"]:
-                for stat_category in k["statistics"]:
-                    for player in stat_category["athletes"]:
-                        player_dict[player["athlete"]["displayName"]] = int(
-                            player["athlete"]["id"]
-                        )
-
             scoring_plays = g.payload.get("scoringPlays", [])
             # For some reason BigQuery was saving the full payload as null sometimes.
             # Just save only the two keys we need.
             payload = {"box_score": box_score, "scoring_plays": scoring_plays}
             for p in scoring_plays:
                 play_id = str(p["id"])
+                player_team_id = int(p["team"]["id"])
+                roster = self.get_roster(player_team_id)
                 if p["scoringType"]["name"] == "touchdown":
                     play_text = p["text"].replace("Blocked Kick Recovered by ", "")
                     first_two_words = " ".join(play_text.split(" ")[:2])
                     first_three_words = " ".join(play_text.split(" ")[:3])
                     try:
                         player_id = (
-                            player_dict.get(first_two_words)
-                            or player_dict.get(first_two_words + " Jr.")
-                            or player_dict[first_two_words + " Sr."]
+                            roster.get(first_two_words)
+                            or roster.get(first_two_words + " Jr.")
+                            or roster[first_two_words + " Sr."]
                         )
                         player_name = first_two_words
                     except KeyError:
                         player_id = (
-                            player_dict.get(first_three_words)
-                            or player_dict.get(first_three_words + " Jr.")
-                            or player_dict[first_three_words + " Sr."]
+                            roster.get(first_three_words)
+                            or roster.get(first_three_words + " Jr.")
+                            or roster[first_three_words + " Sr."]
                         )
                         player_name = first_three_words
 
@@ -269,7 +263,7 @@ class NFLClient(AbstractSportsClient):
                             tweet_phrase=self.short_tweet_phrase,
                             player_name=player_name,
                             player_id=player_id,
-                            player_team_id=int(p["team"]["id"]),
+                            player_team_id=player_team_id,
                             tiebreaker=0,  # Only one touchdowner per play
                             score=score,
                             season_period=g.season_period,
@@ -290,3 +284,18 @@ class NFLClient(AbstractSportsClient):
         return requests.get(
             "https://a.espncdn.com/combiner/i?img=/i/headshots/nophoto.png&w=1378&h=1000"
         ).content
+
+    def get_roster(self, team_id: int) -> dict[str, int]:
+        if self.known_rosters.get(team_id):
+            return self.known_rosters[team_id]
+        else:
+            roster_dict = {}
+            roster = requests.get(
+                f"https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/{team_id}/roster"
+            ).json()["athletes"]
+            for section in roster:
+                for player in section["items"]:
+                    roster_dict[player["displayName"]] = int(player["id"])
+
+            self.known_rosters[team_id] = roster_dict
+            return roster_dict
