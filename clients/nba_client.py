@@ -5,6 +5,8 @@ import os
 import random
 
 import requests
+
+from clients.abstract_sports_client import AbstractSportsClient
 from my_types import (
     CompletedGame,
     Game,
@@ -12,8 +14,6 @@ from my_types import (
     TweetablePlay,
     TwitterCredentials,
 )
-
-from clients.abstract_sports_client import AbstractSportsClient
 
 
 class PlayerLookupError(Exception):
@@ -118,7 +118,7 @@ class NBAClient(AbstractSportsClient):
             1610612751: "#NetsWorld",
             1610612766: "#AllFly",
             1610612741: "#BullsNation",
-            1610612739: "#BeTheFight",
+            1610612739: "#LetEmKnow",
             1610612742: "#MFFL",
             1610612743: "#MileHighBasketball",
             1610612765: "#Pistons",
