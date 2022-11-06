@@ -4,6 +4,8 @@ import datetime
 import os
 
 import requests
+
+from clients.abstract_sports_client import AbstractSportsClient
 from my_types import (
     CompletedGame,
     Game,
@@ -11,8 +13,6 @@ from my_types import (
     TweetablePlay,
     TwitterCredentials,
 )
-
-from clients.abstract_sports_client import AbstractSportsClient
 
 
 class NFLClient(AbstractSportsClient):
@@ -213,7 +213,7 @@ class NFLClient(AbstractSportsClient):
 
             box_score = g.payload["boxscore"]
             # Turn the box score into a dict of player name and player id
-            player_dict: dict[str, int] = {}
+            player_dict: dict[str, int] = {"Andrew Van Ginkel": 3133487}
             for k in box_score["players"]:
                 for stat_category in k["statistics"]:
                     for player in stat_category["athletes"]:
