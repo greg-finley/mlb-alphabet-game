@@ -5,9 +5,9 @@ import os
 from typing import Any
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
+from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 
 class NHLClient(AbstractSportsClient):
@@ -123,7 +123,9 @@ class NHLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a goal"
 
-    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(
+        self, games: list[Game], known_plays: KnownPlays
+    ) -> list[TweetablePlay]:
         """
         Get all goals that we haven't processed yet, only the goal scorer (not the assister).
         """
@@ -146,11 +148,13 @@ class NHLClient(AbstractSportsClient):
 
         for g in games:
             assert g.payload
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
             for p in g.payload["allPlays"]:
                 play_time = datetime.datetime.strptime(
                     p["about"]["dateTime"],
                     "%Y-%m-%dT%H:%M:%SZ",
                 ).replace(tzinfo=datetime.timezone.utc)
+                play_id = str(p["about"]["eventId"])
                 if (
                     p["result"]["event"] == "Goal"
                     and p.get("players")
@@ -160,9 +164,10 @@ class NHLClient(AbstractSportsClient):
                     and (
                         play_time < five_minutes_ago
                     )  # Ensure play_time happened at least 5 minutes ago
+                    and play_id not in known_plays_for_this_game
                 ):
                     scorer: Any = None
-                    for i, player in enumerate(p["players"]):
+                    for player in p["players"]:
                         if player["playerType"] != "Scorer":
                             continue
                         else:
@@ -178,7 +183,7 @@ class NHLClient(AbstractSportsClient):
 
                         tweetable_plays.append(
                             TweetablePlay(
-                                play_id=str(p["about"]["eventId"]),
+                                play_id=play_id,
                                 game_id=g.game_id,
                                 payload=g.payload,
                                 image_name="Goal",

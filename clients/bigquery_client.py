@@ -4,9 +4,9 @@ import datetime
 import json
 
 from google.cloud import bigquery  # type: ignore
-from my_types import CompletedGame, Game, KnownPlay, State, TweetablePlay
 
 from clients.abstract_sports_client import AbstractSportsClient
+from my_types import CompletedGame, Game, KnownPlays, State, TweetablePlay
 
 
 class BigQueryClient:
@@ -66,15 +66,15 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
 
-    def get_known_plays(self, games: list[Game]) -> list[KnownPlay]:
+    def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
         In prior runs, we should record which plays we've already processed.
         """
         # Should never hit this path without games, but if so there are no plays
         if not games:
-            return []
+            return {}
         query = f"""
-                SELECT play_id, game_id, player_name, season_phrase, tweet_id, next_letter, times_cycled
+                SELECT play_id, game_id
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
@@ -82,19 +82,13 @@ class BigQueryClient:
             """
         print(query)
         results = self.client.query(query, job_config=self.job_config).result()
-        return [KnownPlay(*r) for r in results]
-
-    def get_recent_plays_for_season_phrase(self, season_phrase: str) -> list[KnownPlay]:
-        query = f"""
-            SELECT play_id, game_id, player_name, season_phrase, tweet_id, next_letter, times_cycled
-            FROM mlb_alphabet_game.tweetable_plays
-            where sport = '{self.league_code}'
-            and season_phrase = '{season_phrase}'
-            and deleted = false
-            order by completed_at desc limit 50
-        """
-        results = self.client.query(query, job_config=self.job_config).result()
-        return [KnownPlay(*r) for r in results]
+        known_plays: KnownPlays = {}
+        for r in results:
+            if r.game_id not in known_plays:
+                known_plays[r.game_id] = [r.play_id]
+            else:
+                known_plays[r.game_id].append(r.play_id)
+        return known_plays
 
     def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
         q = f"""
@@ -133,11 +127,6 @@ class BigQueryClient:
             print("No state change")
             return
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id} WHERE sport='{self.league_code}';"
-        print(q)
-        self.client.query(q, job_config=self.job_config).result()
-
-    def delete_play_by_tweet_id(self, tweet_id: int) -> None:
-        q = f"UPDATE mlb_alphabet_game.tweetable_plays SET deleted = true, deleted_at = CURRENT_TIMESTAMP() WHERE tweet_id = {tweet_id} and sport = '{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 

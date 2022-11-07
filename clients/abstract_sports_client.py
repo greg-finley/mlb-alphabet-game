@@ -7,9 +7,11 @@ from abc import ABC, abstractmethod
 import aiohttp
 import requests
 from aiohttp.client_exceptions import ContentTypeError
+
 from my_types import (
     CompletedGame,
     Game,
+    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -150,7 +152,9 @@ class AbstractSportsClient(ABC):
         pass
 
     @abstractmethod
-    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(
+        self, games: list[Game], known_plays: KnownPlays
+    ) -> list[TweetablePlay]:
         """Find any new plays that could be Tweetable, depending on the State."""
         pass
 

@@ -9,6 +9,7 @@ from clients.abstract_sports_client import AbstractSportsClient
 from my_types import (
     CompletedGame,
     Game,
+    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -193,7 +194,9 @@ class NFLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a touchdown"
 
-    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(
+        self, games: list[Game], known_plays: KnownPlays
+    ) -> list[TweetablePlay]:
         """Get touchdowns we haven't processed yet and sort them by end_time."""
         await self.gather_with_concurrency(
             self.session,
@@ -211,6 +214,7 @@ class NFLClient(AbstractSportsClient):
 
         for g in games:
             assert g.payload
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
 
             box_score = g.payload["boxscore"]
             scoring_plays = g.payload.get("scoringPlays", [])
@@ -219,9 +223,12 @@ class NFLClient(AbstractSportsClient):
             payload = {"box_score": box_score, "scoring_plays": scoring_plays}
             for p in scoring_plays:
                 play_id = str(p["id"])
-                player_team_id = int(p["team"]["id"])
-                roster = self.get_roster(player_team_id)
-                if p["scoringType"]["name"] == "touchdown":
+                if (
+                    p["scoringType"]["name"] == "touchdown"
+                    and play_id not in known_plays_for_this_game
+                ):
+                    player_team_id = int(p["team"]["id"])
+                    roster = self.get_roster(player_team_id)
                     play_text = p["text"].replace("Blocked Kick Recovered by ", "")
                     first_two_words = " ".join(play_text.split(" ")[:2])
                     first_three_words = " ".join(play_text.split(" ")[:3])

@@ -5,9 +5,9 @@ import os
 import random
 
 import requests
-from my_types import Game, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 from clients.abstract_sports_client import AbstractSportsClient
+from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
 
 HOME_RUN_NAMES = [
     "home run",
@@ -153,7 +153,9 @@ class MLBClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "hit a homer"
 
-    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(
+        self, games: list[Game], known_plays: KnownPlays
+    ) -> list[TweetablePlay]:
         """Get home runs we haven't processed yet and sort them by end_time."""
         await self.gather_with_concurrency(
             self.session,
@@ -171,10 +173,15 @@ class MLBClient(AbstractSportsClient):
 
         for g in games:
             assert g.payload
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
             all_plays = g.payload["allPlays"]
             for p in all_plays:
                 play_id = str(p["atBatIndex"])
-                if p["about"]["isComplete"] and p["result"]["eventType"] == "home_run":
+                if (
+                    p["about"]["isComplete"]
+                    and p["result"]["eventType"] == "home_run"
+                    and play_id not in known_plays_for_this_game
+                ):
                     if p["result"]["rbi"] == 1:
                         image_name = "Solo Home Run"
                         hit_name = f"solo {random.choice(HOME_RUN_NAMES)}"

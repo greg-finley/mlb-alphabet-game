@@ -10,6 +10,7 @@ from clients.abstract_sports_client import AbstractSportsClient
 from my_types import (
     CompletedGame,
     Game,
+    KnownPlays,
     SeasonPeriod,
     TweetablePlay,
     TwitterCredentials,
@@ -193,7 +194,9 @@ class NBAClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "dunked"
 
-    async def get_tweetable_plays(self, games: list[Game]) -> list[TweetablePlay]:
+    async def get_tweetable_plays(
+        self, games: list[Game], known_plays: KnownPlays
+    ) -> list[TweetablePlay]:
         """Get dunks we haven't processed yet and sort them by end_time."""
         await self.gather_with_concurrency(
             self.session,
@@ -212,13 +215,23 @@ class NBAClient(AbstractSportsClient):
         for g in games:
             if not g.payload:
                 continue
+            known_plays_for_this_game = known_plays.get(g.game_id, [])
             payload = g.payload["game"]["actions"]
             for p in payload:
                 play_id = str(p["actionNumber"])
-                if p["actionType"] == "game" and p["subType"] == "end":
+                if (
+                    p["actionType"] == "game"
+                    and p["subType"] == "end"
+                    and play_id not in known_plays_for_this_game
+                ):
                     g.is_complete = True
                 elif p.get("shotResult") == "Made" and p.get("subType") == "DUNK":
                     player_id = p["personId"]
+                    try:
+                        player_name = self._get_player_name(player_id)
+                    except PlayerLookupError:
+                        # Just skip it this run if we can't look it up
+                        continue
                     period = self._period_to_string(p["period"])
                     clock = self._clean_clock(p["clock"])
 
@@ -236,7 +249,7 @@ class NBAClient(AbstractSportsClient):
                             end_time=p["timeActual"],
                             image_name="Slam Dunk",
                             tweet_phrase=f"dunked. {random.choice(NBA_JAM_DUNK_PHRASES)}",
-                            player_name="",  # Look it up later if we end up tweeting this play
+                            player_name=player_name,
                             player_id=player_id,
                             player_team_id=p["teamId"],
                             tiebreaker=0,  # Only one dunk per play

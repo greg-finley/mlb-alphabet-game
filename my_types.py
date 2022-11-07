@@ -140,41 +140,8 @@ class TweetablePlay:
     tweet_id: int | None = None
     tweet_text: str = ""
 
-    def object_with_null_payload(self) -> TweetablePlay:
-        """Null out the payload if we need to print to logs"""
-        return TweetablePlay(
-            self.play_id,
-            self.game_id,
-            None,
-            self.end_time,
-            self.image_name,
-            self.tweet_phrase,
-            self.player_name,
-            self.player_id,
-            self.player_team_id,
-            self.tiebreaker,
-            self.score,
-            self.season_period,
-            self.season_phrase,
-            self.tweet_id,
-            self.tweet_text,
-        )
 
-
-@dataclass
-class KnownPlay:
-    play_id: str
-    game_id: str
-    player_name: str
-    season_phrase: str
-    tweet_id: int
-    next_letter: str
-    times_cycled: int
-
-
-@dataclass
-class DeletedPlay(KnownPlay):
-    deleted_reason: str
+KnownPlays = dict[str, list[str]]
 
 
 @dataclass
