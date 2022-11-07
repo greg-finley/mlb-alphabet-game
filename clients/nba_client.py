@@ -219,13 +219,13 @@ class NBAClient(AbstractSportsClient):
             payload = g.payload["game"]["actions"]
             for p in payload:
                 play_id = str(p["actionNumber"])
-                if (
-                    p["actionType"] == "game"
-                    and p["subType"] == "end"
+                if p["actionType"] == "game" and p["subType"] == "end":
+                    g.is_complete = True
+                elif (
+                    p.get("shotResult") == "Made"
+                    and p.get("subType") == "DUNK"
                     and play_id not in known_plays_for_this_game
                 ):
-                    g.is_complete = True
-                elif p.get("shotResult") == "Made" and p.get("subType") == "DUNK":
                     player_id = p["personId"]
                     try:
                         player_name = self._get_player_name(player_id)
