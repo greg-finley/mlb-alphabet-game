@@ -42,7 +42,8 @@ async def main(sports_client: AbstractSportsClient):
     relevant_games = state.check_for_season_period_change(games)
 
     known_plays = bigquery_client.get_known_plays(relevant_games)
-    print(f"Found {len(known_plays)} known plays")
+    num_known_plays = sum(len(plays) for plays in known_plays.values())
+    print(f"Found {num_known_plays} known plays")
     tweetable_plays = await sports_client.get_tweetable_plays(
         relevant_games, known_plays
     )
