@@ -10,6 +10,10 @@ https://twitter.com/NFLAlphabetGame
 
 The alphabet game, looking for the next letter in MLB player names as they hit home runs, the next letter in NHL player names as they score goals, the next letter in NBA player names as they dunk, and the next letter in NFL player names as they score touchdowns.
 
+# On the Web
+
+https://www.sportsalphabetgame.com/
+
 # API
 
 The tweeted plays are available via an API. The code powering the API and its documentation can be found here: https://github.com/greg-finley/alphabet-game-plays-api
