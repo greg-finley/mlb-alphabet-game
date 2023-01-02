@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from unidecode import unidecode
+
 
 class SeasonPeriod(Enum):
     PRESEASON = "preseason"
@@ -37,7 +39,7 @@ class State:
 
     def find_matching_letters(self, play: TweetablePlay) -> list[str]:
         matching_letters: list[str] = []
-        while self.current_letter in play.player_name.upper():
+        while self.current_letter in unidecode(play.player_name).upper():
             matching_letters.append(self.current_letter)
             self.current_letter = self.next_letter
             if self.current_letter == "A":
