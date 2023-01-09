@@ -48,10 +48,6 @@ class NBAClient(AbstractSportsClient):
     def league_code(self) -> str:
         return "NBA"
 
-    @property
-    def season_period_override(self) -> str | None:
-        return None
-
     def season_period(self, game_id: str) -> SeasonPeriod:
         game_prefix = game_id[:3]
         if game_prefix == "001":

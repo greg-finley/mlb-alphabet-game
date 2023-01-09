@@ -34,10 +34,6 @@ class NFLClient(AbstractSportsClient):
     def league_code(self) -> str:
         return "NFL"
 
-    @property
-    def season_period_override(self) -> str | None:
-        return "since Week 5"
-
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "regular-season":
             return SeasonPeriod.REGULAR_SEASON

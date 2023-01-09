@@ -23,10 +23,6 @@ class NHLClient(AbstractSportsClient):
     def alphabet_game_name(self) -> str:
         return "NHL"
 
-    @property
-    def season_period_override(self) -> str | None:
-        return None
-
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "PR":
             return SeasonPeriod.PRESEASON

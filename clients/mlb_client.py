@@ -35,10 +35,6 @@ class MLBClient(AbstractSportsClient):
         return "Home Run"
 
     @property
-    def season_period_override(self) -> str | None:
-        return None
-
-    @property
     def season_year(self) -> str:
         return str(datetime.date.today().year)
 

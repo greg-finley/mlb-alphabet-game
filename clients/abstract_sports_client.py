@@ -51,11 +51,6 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
-    def season_period_override(self) -> str | None:
-        pass
-
-    @property
-    @abstractmethod
     def team_to_hashtag(self) -> dict:
         pass
 
