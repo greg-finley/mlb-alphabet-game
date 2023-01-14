@@ -37,7 +37,11 @@ class NFLClient(AbstractSportsClient):
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "regular-season":
             return SeasonPeriod.REGULAR_SEASON
-        # TODO: I don't know what the preseason and postseason values are yet
+        elif game_type_raw == "post-season":
+            return SeasonPeriod.PLAYOFFS
+        # Guessing at preseason, maybe it's wrong
+        elif game_type_raw == "pre-season":
+            return SeasonPeriod.PRESEASON
         raise ValueError(f"Unknown game type {game_type_raw}")
 
     def season_phrase(self, season_period: SeasonPeriod) -> str:
