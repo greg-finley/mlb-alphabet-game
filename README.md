@@ -14,6 +14,8 @@ The alphabet game, looking for the next letter in MLB player names as they hit h
 
 https://www.sportsalphabetgame.com/
 
+Website powered by https://github.com/greg-finley/alphabet-game-app
+
 # API
 
 The tweeted plays are available via an API. The code powering the API and its documentation can be found here: https://github.com/greg-finley/alphabet-game-plays-api
