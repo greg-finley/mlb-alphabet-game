@@ -122,7 +122,7 @@ def run(event, context):
         # BigQuery will have the cached results for the latest tweets
         print("Warming up external API")
         requests.get(
-            "https://us-central1-greg-finley.cloudfunctions.net/alphabet-game-plays-api?matches_only=true&limit=0"
+            "https://us-central1-greg-finley.cloudfunctions.net/alphabet-game-plays-api?matches_only=true&limit=0&lite=true"
         )
     else:
         print("Skipping external API warm up")
