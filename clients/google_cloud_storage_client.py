@@ -1,7 +1,7 @@
 import json
 
 import requests
-from google.cloud import storage
+from google.cloud import storage  # type: ignore
 
 
 class GoogleCloudStorageClient:
