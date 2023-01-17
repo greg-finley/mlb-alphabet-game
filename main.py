@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.bigquery_client import BigQueryClient
+from clients.google_cloud_storage_client import GoogleCloudStorageClient
 from clients.mlb_client import MLBClient
 from clients.nba_client import NBAClient, PlayerLookupError
 from clients.nfl_client import NFLClient
@@ -83,6 +84,7 @@ async def main(sports_client: AbstractSportsClient):
             bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
+    GoogleCloudStorageClient.store_latest_plays()
 
 
 async def main_mlb():
