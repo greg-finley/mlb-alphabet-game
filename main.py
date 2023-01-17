@@ -77,6 +77,8 @@ async def main(sports_client: AbstractSportsClient):
             twitter_client.tweet_matched(p, state, matching_letters)
             bigquery_client.update_state(state)
             bigquery_client.add_tweetable_play(p, state)
+            if not DRY_RUN:
+                GoogleCloudStorageClient.store_latest_plays()
 
         else:
             twitter_client.tweet_unmatched(p, state)
@@ -84,7 +86,6 @@ async def main(sports_client: AbstractSportsClient):
             bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
-    GoogleCloudStorageClient.store_latest_plays()
 
 
 async def main_mlb():
