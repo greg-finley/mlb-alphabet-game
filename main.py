@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import os
 
-import requests
 from dotenv import load_dotenv
 
 from clients.abstract_sports_client import AbstractSportsClient
@@ -20,8 +19,7 @@ load_dotenv()
 DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
 
 
-async def main(sports_client: AbstractSportsClient) -> bool:
-    """Returns True if we have added new tweets"""
+async def main(sports_client: AbstractSportsClient):
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=sports_client)
     twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
 
@@ -33,7 +31,7 @@ async def main(sports_client: AbstractSportsClient) -> bool:
 
     if not games:
         print("No incomplete games")
-        return False
+        return
     print(f"Found {len(games)} active games")
 
     # Get the previous state from BigQuery
@@ -58,7 +56,7 @@ async def main(sports_client: AbstractSportsClient) -> bool:
     if not tweetable_plays:
         bigquery_client.set_completed_games(games)
         bigquery_client.update_state(state)
-        return False
+        return
 
     for p in tweetable_plays:
         assert p.payload
@@ -85,44 +83,38 @@ async def main(sports_client: AbstractSportsClient) -> bool:
             bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
-    return True
 
 
 async def main_mlb():
     print("Starting MLB")
     mlb_client = MLBClient(dry_run=DRY_RUN)
-    return await main(mlb_client)
+    await main(mlb_client)
+    print("Ending MLB")
 
 
 async def main_nhl():
     print("Starting NHL")
     nhl_client = NHLClient(dry_run=DRY_RUN)
-    return await main(nhl_client)
+    await main(nhl_client)
+    print("Ending NHL")
 
 
 async def main_nba():
     print("Starting NBA")
     nba_client = NBAClient(dry_run=DRY_RUN)
-    return await main(nba_client)
+    await main(nba_client)
+    print("Ending NBA")
 
 
 async def main_nfl():
     print("Starting NFL")
     nfl_client = NFLClient(dry_run=DRY_RUN)
-    return await main(nfl_client)
+    await main(nfl_client)
+    print("Ending NFL")
 
 
 def run(event, context):
-    mlb_changed = asyncio.run(main_mlb())
-    nhl_changed = asyncio.run(main_nhl())
-    nba_changed = asyncio.run(main_nba())
-    nfl_changed = asyncio.run(main_nfl())
-    if mlb_changed or nhl_changed or nba_changed or nfl_changed:
-        # "Warm up" the external API so that the web site loads quickly.
-        # BigQuery will have the cached results for the latest tweets
-        print("Warming up external API")
-        requests.get(
-            "https://us-central1-greg-finley.cloudfunctions.net/alphabet-game-plays-api?matches_only=true&limit=0&lite=true"
-        )
-    else:
-        print("Skipping external API warm up")
+    asyncio.run(main_mlb())
+    asyncio.run(main_nhl())
+    asyncio.run(main_nfl())
+    asyncio.run(main_nba())
