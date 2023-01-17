@@ -57,6 +57,7 @@ async def main(sports_client: AbstractSportsClient):
     if not tweetable_plays:
         bigquery_client.set_completed_games(games)
         bigquery_client.update_state(state)
+        GoogleCloudStorageClient.store_latest_plays()
         return
 
     for p in tweetable_plays:
