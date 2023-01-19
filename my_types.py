@@ -148,12 +148,15 @@ KnownPlays = dict[str, list[str]]
 
 @dataclass
 class ImageInput:
-    player_name: str  # Charlie Blackmon
-    player_id: int  # 453568
-    event_name: str  # Home Run
-    matching_letters: list[str]  # ['L', 'M', 'N', 'O']
-    next_letter: str  # 'P'
-    alert: str  # '' | '🚨 TRIPLE LETTER 🚨'
+    completed_at: int  # 1673587932
+    matching_letters: list[str]  # ["A", "B", "C"]
+    next_letter: str  # "D"
+    player_id: int  # 8478403
+    player_name: str  # "Gregory Finley"
+    season_phrase: str  # "in the 2022-23 season"
+    sport: str  # "NHL"
+    times_cycled: int  # 22
+    tweet_id: str  # "1613770857377136640"
 
 
 @dataclass

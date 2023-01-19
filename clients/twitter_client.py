@@ -56,14 +56,16 @@ class TwitterClient:
                 filename="dummy_string",
                 file=image_client.get_tweet_image(
                     ImageInput(
-                        player_name=tweetable_play.player_name,
-                        player_id=tweetable_play.player_id,
-                        event_name=tweetable_play.image_name,
+                        completed_at=0,  # Not actually used
                         matching_letters=matching_letters,
-                        alert=alert,
                         next_letter=state.current_letter,
+                        player_id=tweetable_play.player_id,
+                        player_name=tweetable_play.player_name,
+                        season_phrase=tweetable_play.season_phrase,
+                        sport=self.sports_client.league_code,
+                        times_cycled=state.times_cycled,
+                        tweet_id="1",  # Not actually used
                     ),
-                    sports_client=self.sports_client,
                 ),
             )
             tweet = self.api.update_status(
