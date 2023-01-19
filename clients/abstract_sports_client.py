@@ -13,6 +13,7 @@ from my_types import (
     Game,
     KnownPlays,
     SeasonPeriod,
+    Sport,
     TweetablePlay,
     TwitterCredentials,
 )
@@ -27,7 +28,7 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
-    def league_code(self) -> str:
+    def league_code(self) -> Sport:
         pass
 
     @property

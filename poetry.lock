@@ -376,14 +376,6 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
-name = "pillow"
-version = "8.4.0"
-description = "Python Imaging Library (Fork)"
-category = "main"
-optional = false
-python-versions = ">=3.6"
-
-[[package]]
 name = "pluggy"
 version = "1.0.0"
 description = "plugin and hook calling mechanisms for python"
@@ -659,7 +651,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "3.9.12"
-content-hash = "8d5ee61777373698dcc9ed168b2e6bc2e3c4f891d5fc430e1be25a3256e1c07b"
+content-hash = "579cc5b9380b7b55088164150f085f84044a3104312de0971c8fe77c78b98fe6"
 
 [metadata.files]
 aiodns = []
@@ -719,7 +711,6 @@ mypy-extensions = [
 ]
 oauthlib = []
 packaging = []
-pillow = []
 pluggy = []
 proto-plus = []
 protobuf = []
