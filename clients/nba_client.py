@@ -12,6 +12,7 @@ from my_types import (
     Game,
     KnownPlays,
     SeasonPeriod,
+    Sport,
     TweetablePlay,
     TwitterCredentials,
 )
@@ -45,7 +46,7 @@ class NBAClient(AbstractSportsClient):
         self.known_players: dict = {}  # Cache
 
     @property
-    def league_code(self) -> str:
+    def league_code(self) -> Sport:
         return "NBA"
 
     def season_period(self, game_id: str) -> SeasonPeriod:

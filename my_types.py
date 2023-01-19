@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Literal
 
 from unidecode import unidecode
+
+Sport = Literal["NBA", "MLB", "NHL", "NFL"]
 
 
 class SeasonPeriod(Enum):
@@ -154,7 +157,7 @@ class ImageInput:
     player_id: int  # 8478403
     player_name: str  # "Gregory Finley"
     season_phrase: str  # "in the 2022-23 season"
-    sport: str  # "NHL"
+    sport: Sport  # "NHL"
     times_cycled: int  # 22
     tweet_id: str  # "1613770857377136640"
 

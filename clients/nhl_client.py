@@ -7,7 +7,14 @@ from typing import Any
 import requests
 
 from clients.abstract_sports_client import AbstractSportsClient
-from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import (
+    Game,
+    KnownPlays,
+    SeasonPeriod,
+    Sport,
+    TweetablePlay,
+    TwitterCredentials,
+)
 
 
 class NHLClient(AbstractSportsClient):
@@ -16,7 +23,7 @@ class NHLClient(AbstractSportsClient):
         self.base_url = "https://statsapi.web.nhl.com/api/v1"
 
     @property
-    def league_code(self) -> str:
+    def league_code(self) -> Sport:
         return "NHL"
 
     @property

@@ -7,7 +7,14 @@ import random
 import requests
 
 from clients.abstract_sports_client import AbstractSportsClient
-from my_types import Game, KnownPlays, SeasonPeriod, TweetablePlay, TwitterCredentials
+from my_types import (
+    Game,
+    KnownPlays,
+    SeasonPeriod,
+    Sport,
+    TweetablePlay,
+    TwitterCredentials,
+)
 
 HOME_RUN_NAMES = [
     "home run",
@@ -27,7 +34,7 @@ class MLBClient(AbstractSportsClient):
         self.base_url = "https://statsapi.mlb.com/api/v1"
 
     @property
-    def league_code(self) -> str:
+    def league_code(self) -> Sport:
         return "MLB"
 
     @property
