@@ -1,4 +1,5 @@
 import pytest
+
 from my_types import Game, SeasonPeriod, State
 
 
@@ -71,6 +72,7 @@ def test_check_for_season_period_change(
         initial_season=current_season.value,
         tweet_id=0,
         initial_tweet_id=0,
+        scores_since_last_match=99,
     )
     games: list[Game] = []
     for s in game_seasons:
@@ -93,9 +95,11 @@ def test_check_for_season_period_change(
     if state_reset:
         assert state.current_letter == "A"
         assert state.times_cycled == 0
+        assert state.scores_since_last_match == 0
     else:
         assert state.current_letter == "Y"
         assert state.times_cycled == 2
+        assert state.scores_since_last_match == 99
 
 
 @pytest.mark.parametrize(
@@ -128,6 +132,7 @@ def test_check_for_season_period_change_error(
         initial_season=current_season.value,
         tweet_id=0,
         initial_tweet_id=0,
+        scores_since_last_match=99,
     )
     games: list[Game] = []
     for s in game_seasons:
