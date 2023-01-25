@@ -195,6 +195,10 @@ class NFLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a touchdown"
 
+    @property
+    def score_name(self) -> str:
+        return "touchdown"
+
     async def get_tweetable_plays(
         self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:

@@ -191,6 +191,10 @@ class NBAClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "dunked"
 
+    @property
+    def score_name(self) -> str:
+        return "dunk"
+
     async def get_tweetable_plays(
         self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:

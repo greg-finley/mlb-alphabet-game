@@ -126,6 +126,10 @@ class NHLClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "scored a goal"
 
+    @property
+    def score_name(self) -> str:
+        return "goal"
+
     async def get_tweetable_plays(
         self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:

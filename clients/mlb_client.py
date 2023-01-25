@@ -156,6 +156,10 @@ class MLBClient(AbstractSportsClient):
     def short_tweet_phrase(self) -> str:
         return "hit a homer"
 
+    @property
+    def score_name(self) -> str:
+        return "homer"
+
     async def get_tweetable_plays(
         self, games: list[Game], known_plays: KnownPlays
     ) -> list[TweetablePlay]:

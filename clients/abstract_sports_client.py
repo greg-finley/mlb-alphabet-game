@@ -71,6 +71,11 @@ class AbstractSportsClient(ABC):
         "In case the tweet is too long, use something short"
         pass
 
+    @property
+    @abstractmethod
+    def score_name(self) -> str:
+        pass
+
     @abstractmethod
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         pass

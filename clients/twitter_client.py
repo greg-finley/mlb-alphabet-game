@@ -88,7 +88,7 @@ class TwitterClient:
 
             status = f"""{random.choice(SAD_EMOJIS)} {random.choice(SAD_PHRASES)}.
 
-{tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have the letter {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._score_with_spacing(tweetable_play.score)}"""
+{tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have the letter {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._scores_since_with_spacing(state.scores_since_last_match)}{self._score_with_spacing(tweetable_play.score)}"""
             print(status)
             tweetable_play.tweet_text = status
             if not self.dry_run:
@@ -120,14 +120,6 @@ class TwitterClient:
                 alert_name = "QUINTUPLE"
             elif len(matching_letters) == 6:
                 alert_name = "SEXTUPLE"
-            elif len(matching_letters) == 7:
-                alert_name = "SEPTUPLE"
-            elif len(matching_letters) == 8:
-                alert_name = "OCTUPLE"
-            elif len(matching_letters) == 9:
-                alert_name = "NONUPLE"
-            elif len(matching_letters) == 10:
-                alert_name = "DECUPLE"
             else:
                 alert_name = "MEGA"
             return f"""{siren + ' ' if siren else ''}{alert_name} LETTER{' ' + siren if siren else ''}
@@ -149,6 +141,14 @@ class TwitterClient:
         return f"""
 
 {score}"""
+
+    def _scores_since_with_spacing(self, scores_since_last_match: int | None) -> str:
+        # This None case is only relevant when we first started with this column as null. It can eventually be removed.
+        if scores_since_last_match is None:
+            return ""
+        return f"""
+
+It's the {self._int_to_ordinal(scores_since_last_match)} {self.sports_client.score_name} since the last letter match."""
 
     def _tweet_text(
         self,
