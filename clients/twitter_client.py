@@ -79,8 +79,13 @@ class TwitterClient:
             state.tweet_id += 1
             tweetable_play.tweet_id = state.tweet_id
 
+        state.scores_since_last_match = 0
+
     def tweet_unmatched(self, tweetable_play: TweetablePlay, state: State) -> None:
         if state.tweet_id:
+            if state.scores_since_last_match is not None:
+                state.scores_since_last_match += 1
+
             status = f"""{random.choice(SAD_EMOJIS)} {random.choice(SAD_PHRASES)}.
 
 {tweetable_play.player_name} just {self.sports_client.short_tweet_phrase}, but his name doesn't have the letter {state.current_letter}, so the next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is still {state.current_letter}.{self._score_with_spacing(tweetable_play.score)}"""
@@ -168,3 +173,13 @@ class TwitterClient:
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
 
 We have cycled through the alphabet {state.times_cycled} time{'' if state.times_cycled == 1 else 's'} {tweetable_play.season_phrase}.{score}"""
+
+    def _int_to_ordinal(self, num: int) -> str:
+        """Return 1st for 1, 2nd for 2, etc."""
+        if num % 10 == 1 and num % 100 != 11:
+            return f"{num}st"
+        if num % 10 == 2 and num % 100 != 12:
+            return f"{num}nd"
+        if num % 10 == 3 and num % 100 != 13:
+            return f"{num}rd"
+        return f"{num}th"

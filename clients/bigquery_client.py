@@ -110,7 +110,7 @@ class BigQueryClient:
     def get_initial_state(self) -> State:
         # Always get the real state, even in dry run mode
         rows = self.client.query(
-            f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
+            f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
         )
         # Will only have one row
         for row in rows:
@@ -126,7 +126,7 @@ class BigQueryClient:
         ):
             print("No state change")
             return
-        q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id} WHERE sport='{self.league_code}';"
+        q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id}{f', scores_since_last_match = {state.scores_since_last_match}' if state.scores_since_last_match is not None else ''} WHERE sport='{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
@@ -139,7 +139,7 @@ class BigQueryClient:
 
     @property
     def _15_minutes_ago(self) -> str:
-        """Get a time 10 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
+        """Get a time 15 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
         dt = datetime.datetime.now(datetime.timezone.utc)
         dt = dt - datetime.timedelta(minutes=15)
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")

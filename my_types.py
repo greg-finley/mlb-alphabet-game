@@ -35,6 +35,7 @@ class State:
     initial_season: str
     tweet_id: int
     initial_tweet_id: int
+    scores_since_last_match: int
 
     @property
     def next_letter(self) -> str:
@@ -123,6 +124,7 @@ class State:
         self.current_letter = "A"
         self.times_cycled = 0
         self.tweet_id = 0
+        self.scores_since_last_match = 0
 
 
 @dataclass
