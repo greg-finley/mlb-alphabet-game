@@ -33,7 +33,7 @@ class NHLClient(AbstractSportsClient):
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw == "PR":
             return SeasonPeriod.PRESEASON
-        elif game_type_raw == "R":
+        elif game_type_raw in ["R", "A"]:
             return SeasonPeriod.REGULAR_SEASON
         elif game_type_raw == "P":
             return SeasonPeriod.PLAYOFFS
