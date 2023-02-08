@@ -43,7 +43,16 @@ class State:
 
     def find_matching_letters(self, play: TweetablePlay) -> list[str]:
         matching_letters: list[str] = []
-        while self.current_letter in unidecode(play.player_name).upper():
+        cleaned_name = (
+            unidecode(play.player_name)
+            .upper()
+            .removesuffix(" JR.")
+            .removesuffix(" SR.")
+            .removesuffix(" III")
+            .removesuffix(" II")
+            .removesuffix(" IV")
+        )
+        while self.current_letter in cleaned_name:
             matching_letters.append(self.current_letter)
             self.current_letter = self.next_letter
             if self.current_letter == "A":
