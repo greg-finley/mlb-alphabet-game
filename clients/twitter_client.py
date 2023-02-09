@@ -92,12 +92,22 @@ class TwitterClient:
             print(status)
             tweetable_play.tweet_text = status
             if not self.dry_run:
-                tweet = self.api.update_status(
-                    status=status,
-                    in_reply_to_status_id=state.tweet_id,
-                )
-                state.tweet_id = tweet.id
-                tweetable_play.tweet_id = tweet.id
+                # Only tweet every 5 unmatched plays, to account for Twitter having a lower API limit
+                # https://twitter.com/twitterdev/status/1623467618400374784
+                if (
+                    self.sports_client == "NFL"  # NFL doesn't have very many touchdowns
+                    or (state.scores_since_last_match or -1 % 5 == 0)
+                ):
+                    tweet = self.api.update_status(
+                        status=status,
+                        in_reply_to_status_id=state.tweet_id,
+                    )
+                    state.tweet_id = tweet.id
+                    tweetable_play.tweet_id = tweet.id
+                else:
+                    # Leave state alone, so we still reply to the last real tweet
+                    # Mark tweet_id as -1 so it's still in the database
+                    tweetable_play.tweet_id = -1
             else:
                 # Increment the tweet_id to test the BQ logic
                 state.tweet_id += 1
