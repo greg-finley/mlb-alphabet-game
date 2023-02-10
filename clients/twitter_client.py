@@ -97,7 +97,7 @@ class TwitterClient:
                 print("Scores since last match:", state.scores_since_last_match)
                 if (
                     self.sports_client == "NFL"  # NFL doesn't have very many touchdowns
-                    or (state.scores_since_last_match or -1 % 5 == 0)
+                    or (((state.scores_since_last_match or -1) % 5) == 0)
                 ):
                     print("Tweeting unmatched play")
                     tweet = self.api.update_status(
