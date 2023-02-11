@@ -92,12 +92,12 @@ class TwitterClient:
             print(status)
             tweetable_play.tweet_text = status
             if not self.dry_run:
-                # Only tweet every 5 unmatched plays, to account for Twitter having a lower API limit
+                # Only tweet every 10 unmatched plays, to account for Twitter having a lower API limit
                 # https://twitter.com/twitterdev/status/1623467618400374784
                 print("Scores since last match:", state.scores_since_last_match)
                 if (
                     self.sports_client == "NFL"  # NFL doesn't have very many touchdowns
-                    or (((state.scores_since_last_match or -1) % 5) == 0)
+                    or (((state.scores_since_last_match or -1) % 10) == 0)
                 ):
                     print("Tweeting unmatched play")
                     tweet = self.api.update_status(
