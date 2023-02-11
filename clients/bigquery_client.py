@@ -114,7 +114,9 @@ class BigQueryClient:
         )
         # Will only have one row
         for row in rows:
-            return State(*row)
+            state = State(*row)
+            print("Initial state", state)
+            return state
         raise Exception("No state found")
 
     def update_state(self, state: State) -> None:
@@ -126,6 +128,7 @@ class BigQueryClient:
         ):
             print("No state change")
             return
+        print("Updated state", state)
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id}{f', scores_since_last_match = {state.scores_since_last_match}' if state.scores_since_last_match is not None else ''} WHERE sport='{self.league_code}';"
         print(q)
         self.client.query(q, job_config=self.job_config).result()

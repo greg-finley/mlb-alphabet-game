@@ -37,7 +37,6 @@ async def main(sports_client: AbstractSportsClient):
 
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
-    print(state)
 
     # Side effect of updating the state if season period changes
     relevant_games = state.check_for_season_period_change(games)
@@ -75,15 +74,14 @@ async def main(sports_client: AbstractSportsClient):
         if matching_letters:
             # Tweet it
             twitter_client.tweet_matched(p, state, matching_letters)
-            bigquery_client.update_state(state)
-            bigquery_client.add_tweetable_play(p, state)
             if not DRY_RUN:
                 GoogleCloudStorageClient.store_latest_plays()
 
         else:
             twitter_client.tweet_unmatched(p, state)
-            bigquery_client.update_state(state)
-            bigquery_client.add_tweetable_play(p, state)
+
+        bigquery_client.update_state(state)
+        bigquery_client.add_tweetable_play(p, state)
 
     bigquery_client.set_completed_games(games)
 
