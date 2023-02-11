@@ -34,7 +34,6 @@ class ImageClient:
             params=query_params,
             json={},
         )
-        print(response.status_code)
         image = response.content
 
         if local_save_name:

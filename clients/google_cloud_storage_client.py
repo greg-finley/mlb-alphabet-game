@@ -22,5 +22,3 @@ class GoogleCloudStorageClient:
         blob = bucket.blob("alphabet-data.json")
 
         blob.upload_from_string(json_data, content_type="application/json")
-
-        print("Upload complete!")
