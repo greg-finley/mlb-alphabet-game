@@ -68,13 +68,11 @@ class NBAClient(AbstractSportsClient):
     def get_current_games(self, completed_games: list[CompletedGame]) -> list[Game]:
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
-        # yesterday_str, like 9/30/2022 12:00:00 AM
-        yesterday_str = (
-            f"{yesterday.month}/{yesterday.day}/{yesterday.year} 12:00:00 AM"
-        )
+        # yesterday_str, like 09/30/2022 00:00:00
+        yesterday_str = f"{self._int_to_string_with_padding(yesterday.month)}/{self._int_to_string_with_padding(yesterday.day)}/{yesterday.year} 00:00:00"
         tomorrow = today + datetime.timedelta(days=1)
-        tomorrow_str = f"{tomorrow.month}/{tomorrow.day}/{tomorrow.year} 12:00:00 AM"
-        today_str = f"{today.month}/{today.day}/{today.year} 12:00:00 AM"
+        tomorrow_str = f"{self._int_to_string_with_padding(tomorrow.month)}/{self._int_to_string_with_padding(tomorrow.day)}/{tomorrow.year} 00:00:00"
+        today_str = f"{self._int_to_string_with_padding(today.month)}/{self._int_to_string_with_padding(today.day)}/{today.year} 00:00:00"
 
         game_dates = requests.get(
             "https://cdn.nba.com/static/json/staticData/scheduleLeagueV2.json"
@@ -293,7 +291,8 @@ class NBAClient(AbstractSportsClient):
             self.known_players[player_id] = player_name
             return player_name
 
-    def _clean_clock(self, clock: str) -> str:
+    @staticmethod
+    def _clean_clock(clock: str) -> str:
         """Change a time like PT06M40.00S to 06:40."""
         return (
             clock.replace("PT", "")
@@ -301,3 +300,7 @@ class NBAClient(AbstractSportsClient):
             .replace("S", "")
             .replace(".00", "")  # Remove milliseconds if they are all zeros
         )
+
+    @staticmethod
+    def _int_to_string_with_padding(number: int):
+        return f"{number:02d}" if number < 10 else str(number)
