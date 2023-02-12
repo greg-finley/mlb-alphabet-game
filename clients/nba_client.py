@@ -120,7 +120,7 @@ class NBAClient(AbstractSportsClient):
             1610612765: "#Pistons",
             1610612744: "#DubNation",
             1610612745: "#Rockets",
-            1610612754: "#GoldBlooded",
+            1610612754: "#BoomBaby",
             1610612746: "#ClipperNation",
             1610612747: "#LakeShow",
             1610612763: "#GrindCity",
