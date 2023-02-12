@@ -110,7 +110,7 @@ class BigQueryClient:
     def get_initial_state(self) -> State:
         # Always get the real state, even in dry run mode
         rows = self.client.query(
-            f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
+            f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match, scores_since_last_match as initial_scores_since_last_match FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
         )
         # Will only have one row
         for row in rows:
@@ -125,6 +125,7 @@ class BigQueryClient:
             and state.times_cycled == state.initial_times_cycled
             and state.season == state.initial_season
             and state.tweet_id == state.initial_tweet_id
+            and state.scores_since_last_match == state.initial_scores_since_last_match
         ):
             print("No state change")
             return

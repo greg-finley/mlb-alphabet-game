@@ -36,6 +36,7 @@ class State:
     tweet_id: int
     initial_tweet_id: int
     scores_since_last_match: int | None
+    initial_scores_since_last_match: int | None
 
     @property
     def next_letter(self) -> str:
