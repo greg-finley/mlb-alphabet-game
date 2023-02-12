@@ -73,6 +73,7 @@ def test_check_for_season_period_change(
         tweet_id=0,
         initial_tweet_id=0,
         scores_since_last_match=99,
+        initial_scores_since_last_match=99,
     )
     games: list[Game] = []
     for s in game_seasons:
@@ -133,6 +134,7 @@ def test_check_for_season_period_change_error(
         tweet_id=0,
         initial_tweet_id=0,
         scores_since_last_match=99,
+        initial_scores_since_last_match=99,
     )
     games: list[Game] = []
     for s in game_seasons:
