@@ -96,7 +96,8 @@ class TwitterClient:
                 # https://twitter.com/twitterdev/status/1623467618400374784
                 print("Scores since last match:", state.scores_since_last_match)
                 if (
-                    self.sports_client == "NFL"  # NFL doesn't have very many touchdowns
+                    self.sports_client.league_code
+                    == "NFL"  # NFL doesn't have very many touchdowns
                     or (((state.scores_since_last_match or -1) % 10) == 0)
                 ):
                     print("Tweeting unmatched play")
