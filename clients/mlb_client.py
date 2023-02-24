@@ -51,7 +51,7 @@ class MLBClient(AbstractSportsClient):
         raise NotImplementedError()
 
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
-        if game_type_raw == "S":
+        if game_type_raw in ["S", "E"]:
             return SeasonPeriod.PRESEASON
         # Treat the all-star game as part of the regular season
         elif game_type_raw in ["R", "A"]:
