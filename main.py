@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.bigquery_client import BigQueryClient
-from clients.google_cloud_storage_client import GoogleCloudStorageClient
 from clients.mlb_client import MLBClient
 from clients.nba_client import NBAClient, PlayerLookupError
 from clients.nfl_client import NFLClient
@@ -70,18 +69,18 @@ async def main(sports_client: AbstractSportsClient):
                 continue
 
         matching_letters = state.find_matching_letters(p)
+        is_match = False
 
         if matching_letters:
             # Tweet it
+            is_match = True
             twitter_client.tweet_matched(p, state, matching_letters)
-            if not DRY_RUN:
-                GoogleCloudStorageClient.store_latest_plays()
 
         else:
             twitter_client.tweet_unmatched(p, state)
 
         bigquery_client.update_state(state)
-        bigquery_client.add_tweetable_play(p, state)
+        bigquery_client.add_tweetable_play(p, state, is_match)
 
     bigquery_client.set_completed_games(games)
 

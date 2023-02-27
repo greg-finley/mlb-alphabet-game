@@ -6,6 +6,7 @@ import json
 from google.cloud import bigquery  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
+from clients.google_cloud_storage_client import GoogleCloudStorageClient
 from my_types import CompletedGame, Game, KnownPlays, State, TweetablePlay
 
 
@@ -14,6 +15,7 @@ class BigQueryClient:
         self.client = bigquery.Client()
         self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
+        self.dry_run = dry_run
 
     def get_completed_games(self) -> list[CompletedGame]:
         query = f"""
@@ -90,7 +92,9 @@ class BigQueryClient:
                 known_plays[r.game_id].append(r.play_id)
         return known_plays
 
-    def add_tweetable_play(self, tweetable_play: TweetablePlay, state: State) -> None:
+    def add_tweetable_play(
+        self, tweetable_play: TweetablePlay, state: State, is_match: bool
+    ) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
             tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload, deleted, tweet_text, player_id, team_id)
@@ -106,6 +110,8 @@ class BigQueryClient:
             tweetable_play.player_name,
         )
         self.client.query(q, job_config=self.job_config).result()
+        if is_match and not self.dry_run:
+            GoogleCloudStorageClient.store_latest_plays()
 
     def get_initial_state(self) -> State:
         # Always get the real state, even in dry run mode
