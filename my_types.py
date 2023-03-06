@@ -143,7 +143,6 @@ class TweetablePlay:
 
     play_id: str
     game_id: str
-    payload: dict | None
     end_time: str
     image_name: str  # 2-Run Home Run
     tweet_phrase: str  # hit a 2-run dinger

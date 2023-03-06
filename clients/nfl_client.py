@@ -221,11 +221,7 @@ class NFLClient(AbstractSportsClient):
             assert g.payload
             known_plays_for_this_game = known_plays.get(g.game_id, [])
 
-            box_score = g.payload["boxscore"]
             scoring_plays = g.payload.get("scoringPlays", [])
-            # For some reason BigQuery was saving the full payload as null sometimes.
-            # Just save only the two keys we need.
-            payload = {"box_score": box_score, "scoring_plays": scoring_plays}
             for p in scoring_plays:
                 play_id = str(p["id"])
                 if (
@@ -268,7 +264,6 @@ class NFLClient(AbstractSportsClient):
                     tweetable_plays.append(
                         TweetablePlay(
                             play_id=play_id,
-                            payload=payload,
                             game_id=g.game_id,
                             end_time="",  # This API doesn't tell me the actual time, so nothing to sort on
                             image_name="Touchdown",

@@ -58,8 +58,6 @@ async def main(sports_client: AbstractSportsClient):
         return
 
     for p in tweetable_plays:
-        assert p.payload
-
         # NBA player name lookup is expensive, so do it only for new tweetable plays
         if isinstance(sports_client, NBAClient):
             try:

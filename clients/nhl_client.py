@@ -192,7 +192,6 @@ class NHLClient(AbstractSportsClient):
                             TweetablePlay(
                                 play_id=play_id,
                                 game_id=g.game_id,
-                                payload=g.payload,
                                 image_name="Goal",
                                 tweet_phrase=self.short_tweet_phrase,
                                 player_name=scorer["player"]["fullName"],

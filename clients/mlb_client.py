@@ -215,7 +215,6 @@ class MLBClient(AbstractSportsClient):
                         TweetablePlay(
                             play_id=play_id,
                             game_id=g.game_id,
-                            payload=g.payload,
                             image_name=image_name,
                             tweet_phrase=f"hit a {hit_name}",
                             player_name=p["matchup"]["batter"]["fullName"],

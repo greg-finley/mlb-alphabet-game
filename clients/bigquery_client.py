@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-import json
 
 from google.cloud import bigquery  # type: ignore
 
@@ -54,8 +53,6 @@ class BigQueryClient:
             q = q[:-1]  # remove trailing comma
             print(q)
             self.client.query(q, job_config=self.job_config).result()
-            # Also null out old plays
-            self.null_out_old_payloads()
         if uncompleted_games:
             q = """
                 DELETE FROM mlb_alphabet_game.completed_games
@@ -97,11 +94,11 @@ class BigQueryClient:
     ) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, payload, deleted, tweet_text, player_id, team_id)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, deleted, tweet_text, player_id, team_id)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
-            SAFE.PARSE_JSON('{self._escape_string(json.dumps(tweetable_play.payload))}'), false, '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
+            false, '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
         """
         print(
             "Adding tweetable play:",
@@ -137,13 +134,6 @@ class BigQueryClient:
             return
         print("Updated state", state)
         q = f"UPDATE mlb_alphabet_game.state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id}{f', scores_since_last_match = {state.scores_since_last_match}' if state.scores_since_last_match is not None else ''} WHERE sport='{self.league_code}';"
-        print(q)
-        self.client.query(q, job_config=self.job_config).result()
-
-    def null_out_old_payloads(self) -> None:
-        """Periodically throw away the old payloads to keep the BigQuery table size down"""
-        q = """UPDATE mlb_alphabet_game.tweetable_plays SET payload = null
-        WHERE payload is not null and completed_at < DATE_SUB(CURRENT_TIMESTAMP(), INTERVAL 10 DAY);"""
         print(q)
         self.client.query(q, job_config=self.job_config).result()
 
