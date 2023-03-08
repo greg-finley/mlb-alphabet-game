@@ -1365,6 +1365,18 @@ socks = ["requests[socks] (>=2.27.0,<3)"]
 test = ["vcrpy (>=1.10.3)"]
 
 [[package]]
+name = "types-mysqlclient"
+version = "2.1.5.6"
+description = "Typing stubs for mysqlclient"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-mysqlclient-2.1.5.6.tar.gz", hash = "sha256:0ff43cfcd3d07d020d48c13a77ba5994439f0d4941fef2195df7d918e6aadbab"},
+    {file = "types_mysqlclient-2.1.5.6-py3-none-any.whl", hash = "sha256:b28f164fd54ea5cece0399d05068621c268c8e39a48b3b18d3fd6d3d50b27fe9"},
+]
+
+[[package]]
 name = "types-pytz"
 version = "2021.3.8"
 description = "Typing stubs for pytz"
@@ -1535,4 +1547,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.9.16"
-content-hash = "87edc318f8a12236cfcce91a476e0b703dda92497f8cf10694c672e418ae8109"
+content-hash = "1900e483b312a2485e618968b119f1d2ab116c31ba885add819d35f468745283"
