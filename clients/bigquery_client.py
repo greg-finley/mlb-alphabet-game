@@ -17,14 +17,17 @@ class BigQueryClient:
         self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
         self.dry_run = dry_run
-        self.mysql_connection = MySQLdb.connect(
-            host=os.getenv("MYSQL_HOST"),
-            user=os.getenv("MYSQL_USERNAME"),
-            passwd=os.getenv("MYSQL_PASSWORD"),
-            db=os.getenv("MYSQL_DATABASE"),
-            ssl_mode="VERIFY_IDENTITY",
-            ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
-        )
+        if not dry_run:
+            self.mysql_connection = MySQLdb.connect(
+                host=os.getenv("MYSQL_HOST"),
+                user=os.getenv("MYSQL_USERNAME"),
+                passwd=os.getenv("MYSQL_PASSWORD"),
+                db=os.getenv("MYSQL_DATABASE"),
+                ssl_mode="VERIFY_IDENTITY",
+                ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
+            )
+        else:
+            self.mysql_connection = None
 
     def get_completed_games(self) -> list[CompletedGame]:
         query = f"""
@@ -64,6 +67,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
             if not self.dry_run:
+                assert self.mysql_connection is not None
                 self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
@@ -82,6 +86,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
             if not self.dry_run:
+                assert self.mysql_connection is not None
                 self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
