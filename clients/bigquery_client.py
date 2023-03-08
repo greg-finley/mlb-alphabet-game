@@ -66,8 +66,7 @@ class BigQueryClient:
             q = q[:-1]  # remove trailing comma
             print(q)
             self.client.query(q, job_config=self.job_config).result()
-            if not self.dry_run:
-                assert self.mysql_connection is not None
+            if self.mysql_connection:
                 self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
@@ -85,14 +84,16 @@ class BigQueryClient:
             q += f") and sport = '{self.league_code}'"
             print(q)
             self.client.query(q, job_config=self.job_config).result()
-            if not self.dry_run:
-                assert self.mysql_connection is not None
+            if self.mysql_connection:
                 self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
                         "",
                     )
                 )
+
+        if self.mysql_connection:
+            self.mysql_connection.close()
 
     def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
