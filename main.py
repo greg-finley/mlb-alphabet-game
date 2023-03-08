@@ -55,6 +55,8 @@ async def main(sports_client: AbstractSportsClient):
     if not tweetable_plays:
         bigquery_client.set_completed_games(games)
         bigquery_client.update_state(state)
+        if bigquery_client.mysql_connection:
+            bigquery_client.mysql_connection.close()
         return
 
     for p in tweetable_plays:
@@ -81,6 +83,8 @@ async def main(sports_client: AbstractSportsClient):
         bigquery_client.add_tweetable_play(p, state, is_match)
 
     bigquery_client.set_completed_games(games)
+    if bigquery_client.mysql_connection:
+        bigquery_client.mysql_connection.close()
 
 
 async def main_mlb():
