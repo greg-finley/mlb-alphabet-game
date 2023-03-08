@@ -5,7 +5,7 @@ description = ""
 authors = ["Greg Finley <gregory.finley@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "3.9.12"
+python = "3.9.16"
 requests = "^2.28.1"
 google-cloud-bigquery = "^3.3.2"
 tweepy = "^4.4.0"
