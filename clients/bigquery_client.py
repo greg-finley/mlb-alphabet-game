@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import datetime
+import os
 
+import MySQLdb
 from google.cloud import bigquery  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
@@ -15,6 +17,14 @@ class BigQueryClient:
         self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
         self.dry_run = dry_run
+        self.mysql_connection = MySQLdb.connect(
+            host=os.getenv("MYSQL_HOST"),
+            user=os.getenv("MYSQL_USERNAME"),
+            passwd=os.getenv("MYSQL_PASSWORD"),
+            db=os.getenv("MYSQL_DATABASE"),
+            ssl_mode="VERIFY_IDENTITY",
+            ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
+        )
 
     def get_completed_games(self) -> list[CompletedGame]:
         query = f"""
@@ -53,6 +63,13 @@ class BigQueryClient:
             q = q[:-1]  # remove trailing comma
             print(q)
             self.client.query(q, job_config=self.job_config).result()
+            if not self.dry_run:
+                self.mysql_connection.query(
+                    q.replace(
+                        "mlb_alphabet_game.",
+                        "",
+                    )
+                )
         if uncompleted_games:
             q = """
                 DELETE FROM mlb_alphabet_game.completed_games
@@ -64,6 +81,13 @@ class BigQueryClient:
             q += f") and sport = '{self.league_code}'"
             print(q)
             self.client.query(q, job_config=self.job_config).result()
+            if not self.dry_run:
+                self.mysql_connection.query(
+                    q.replace(
+                        "mlb_alphabet_game.",
+                        "",
+                    )
+                )
 
     def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
