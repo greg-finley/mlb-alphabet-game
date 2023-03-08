@@ -68,7 +68,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
             if self.mysql_connection:
-                self.mysql_connection.execute(
+                self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
                         "",
@@ -86,7 +86,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
             if self.mysql_connection:
-                self.mysql_connection.execute(
+                self.mysql_connection.query(
                     q.replace(
                         "mlb_alphabet_game.",
                         "",
@@ -165,7 +165,7 @@ class BigQueryClient:
         print(q)
         self.client.query(q, job_config=self.job_config).result()
         if self.mysql_connection:
-            self.mysql_connection.execute(
+            self.mysql_connection.query(
                 q.replace(
                     "mlb_alphabet_game.",
                     "",
