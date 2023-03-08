@@ -26,6 +26,7 @@ class BigQueryClient:
                 ssl_mode="VERIFY_IDENTITY",
                 ssl={"ca": "/etc/ssl/certs/ca-certificates.crt"},
             )
+            self.mysql_connection.autocommit(True)
         else:
             self.mysql_connection = None
 
