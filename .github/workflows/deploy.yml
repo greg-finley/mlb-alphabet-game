@@ -1,6 +1,11 @@
 name: deploy
 on:
   push:
+env:
+  MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
+  MYSQL_USERNAME: ${{ secrets.MYSQL_USERNAME }}
+  MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
+  MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
 jobs:
   test:
     runs-on: ubuntu-latest
