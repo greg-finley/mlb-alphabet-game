@@ -11,8 +11,6 @@ jobs:
         uses: "google-github-actions/auth@v0"
         with:
           credentials_json: "${{ secrets.gcp_credentials }}"
-      - id: "whoami"
-        run: gcloud config list account --format "value(core.account)" 2> /dev/null
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9.16
