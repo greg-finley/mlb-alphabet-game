@@ -34,19 +34,21 @@ class BigQueryClient:
     def get_completed_games(self) -> list[CompletedGame]:
         query = f"""
             SELECT game_id, completed_at
-            FROM mlb_alphabet_game.completed_games
+            FROM completed_games
             where sport = '{self.league_code}'
             order by completed_at desc limit 100
         """
-        results = self.client.query(query, job_config=self.job_config).result()
+        self.mysql_connection.query(query)
+        r = self.mysql_connection.store_result()
+        rows = r.fetch_row(maxrows=100, how=1)
         # Keep polling games until 15 minutes after they have been marked completed,
         # in case a call gets overturned or something
         return [
             CompletedGame(
-                game_id=r.game_id,
-                recently_completed=not str(r.completed_at) < self._15_minutes_ago,
+                game_id=r["game_id"],
+                recently_completed=not str(r["completed_at"]) < self._15_minutes_ago,
             )
-            for r in results
+            for r in rows
         ]
 
     def set_completed_games(self, games: list[Game]) -> None:
