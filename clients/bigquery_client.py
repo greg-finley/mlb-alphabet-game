@@ -168,12 +168,7 @@ class BigQueryClient:
         q = f"UPDATE state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id}{f', scores_since_last_match = {state.scores_since_last_match}' if state.scores_since_last_match is not None else ''} WHERE sport='{self.league_code}';"
         print(q)
         if not self.dry_run:
-            self.mysql_connection.query(
-                q.replace(
-                    "mlb_alphabet_game.",
-                    "",
-                )
-            )
+            self.mysql_connection.query(q)
 
     @property
     def _15_minutes_ago(self) -> str:
