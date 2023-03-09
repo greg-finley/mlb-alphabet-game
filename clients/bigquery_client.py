@@ -8,7 +8,7 @@ from google.cloud import bigquery  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.google_cloud_storage_client import GoogleCloudStorageClient
-from my_types import CompletedGame, Game, KnownPlays, State, TweetablePlay
+from my_types import CompletedGame, Game, KnownPlays, SeasonPeriod, State, TweetablePlay
 
 
 class BigQueryClient:
@@ -139,12 +139,28 @@ class BigQueryClient:
             GoogleCloudStorageClient.store_latest_plays()
 
     def get_initial_state(self) -> State:
-        # Always get the real state, even in dry run mode
-        rows = self.client.query(
-            f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match, scores_since_last_match as initial_scores_since_last_match FROM mlb_alphabet_game.state where sport = '{self.league_code}';"
-        )
+        if not self.mysql_connection:
+            return State(
+                current_letter="Y",
+                times_cycled=2,
+                season=SeasonPeriod.PRESEASON.value,
+                initial_current_letter="Y",
+                initial_times_cycled=2,
+                initial_season=SeasonPeriod.PRESEASON.value,
+                tweet_id=0,
+                initial_tweet_id=0,
+                scores_since_last_match=99,
+                initial_scores_since_last_match=99,
+            )
+        else:
+            self.mysql_connection.query(
+                f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match, scores_since_last_match as initial_scores_since_last_match FROM state where sport = '{self.league_code}';"
+            )
+            r = self.mysql_connection.store_result()
+            rows = r.fetch_row(maxrows=1, how=1)
         # Will only have one row
         for row in rows:
+            print(row)
             state = State(*row)
             print("Initial state", state)
             return state
