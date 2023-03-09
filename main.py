@@ -36,6 +36,7 @@ async def main(sports_client: AbstractSportsClient):
 
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
+    print(f"Inital state: {state}")
 
     # Side effect of updating the state if season period changes
     relevant_games = state.check_for_season_period_change(games)
