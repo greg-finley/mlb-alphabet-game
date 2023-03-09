@@ -62,24 +62,18 @@ class BigQueryClient:
 
         if complete_games:
             q = """
-                INSERT INTO mlb_alphabet_game.completed_games (game_id, sport, completed_at)
+                INSERT INTO completed_games (game_id, sport, completed_at)
                 VALUES
             """
             for g in complete_games:
                 q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
             q = q[:-1]  # remove trailing comma
             print(q)
-            self.client.query(q, job_config=self.job_config).result()
             if not self.dry_run:
-                self.mysql_connection.query(
-                    q.replace(
-                        "mlb_alphabet_game.",
-                        "",
-                    )
-                )
+                self.mysql_connection.query(q)
         if uncompleted_games:
             q = """
-                DELETE FROM mlb_alphabet_game.completed_games
+                DELETE FROM completed_games
                 WHERE game_id in (
             """
             for g in uncompleted_games:
@@ -89,12 +83,7 @@ class BigQueryClient:
             print(q)
             self.client.query(q, job_config=self.job_config).result()
             if not self.dry_run:
-                self.mysql_connection.query(
-                    q.replace(
-                        "mlb_alphabet_game.",
-                        "",
-                    )
-                )
+                self.mysql_connection.query(q)
 
     def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
