@@ -75,7 +75,7 @@ class TwitterClient:
             state.tweet_id = tweet.id
             tweetable_play.tweet_id = tweet.id
         else:
-            # Increment the tweet_id to test the BQ logic
+            # Increment the tweet_id to test the MySQL logic
             state.tweet_id += 1
             tweetable_play.tweet_id = state.tweet_id
 
@@ -113,7 +113,7 @@ class TwitterClient:
                     print("Skipping unmatched play")
                     tweetable_play.tweet_id = -1
             else:
-                # Increment the tweet_id to test the BQ logic
+                # Increment the tweet_id to test the MySQL logic
                 state.tweet_id += 1
                 tweetable_play.tweet_id = state.tweet_id
 

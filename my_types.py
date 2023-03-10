@@ -25,7 +25,7 @@ class TwitterCredentials:
 
 @dataclass
 class State:
-    """Initially retrieved from BigQuery, updated if we find matches."""
+    """Initially retrieved from MySQL, updated if we find matches."""
 
     current_letter: str
     initial_current_letter: str

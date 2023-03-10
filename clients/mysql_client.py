@@ -3,20 +3,17 @@ from __future__ import annotations
 import os
 
 import MySQLdb
-from google.cloud import bigquery  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.google_cloud_storage_client import GoogleCloudStorageClient
 from my_types import Game, KnownPlays, State, TweetablePlay
 
 
-class BigQueryClient:
+class MySQLClient:
     def __init__(self, dry_run: bool, sports_client: AbstractSportsClient) -> None:
-        self.client = bigquery.Client()
-        self.job_config = bigquery.QueryJobConfig(dry_run=dry_run)
         self.league_code = sports_client.league_code
         self.dry_run = dry_run
-        self.mysql_connection = MySQLdb.connect(
+        self.connection = MySQLdb.connect(
             host=os.getenv("MYSQL_HOST"),
             user=os.getenv("MYSQL_USERNAME"),
             passwd=os.getenv("MYSQL_PASSWORD"),
@@ -28,7 +25,7 @@ class BigQueryClient:
                 )
             },
         )
-        self.mysql_connection.autocommit(True)
+        self.connection.autocommit(True)
 
     def get_active_games(self, games: list[Game]) -> list[Game]:
         query = f"""
@@ -37,8 +34,8 @@ class BigQueryClient:
             where game_id in ({','.join([f"'{g.game_id}'" for g in games])})
             and sport = '{self.league_code}'
         """
-        self.mysql_connection.query(query)
-        r = self.mysql_connection.store_result()
+        self.connection.query(query)
+        r = self.connection.store_result()
         completed_game_ids = [row["game_id"] for row in r.fetch_row(maxrows=100, how=1)]
 
         return [g for g in games if g.game_id not in completed_game_ids]
@@ -56,7 +53,7 @@ class BigQueryClient:
             q = q[:-1]  # remove trailing comma
             print(q)
             if not self.dry_run:
-                self.mysql_connection.query(q)
+                self.connection.query(q)
 
     def get_known_plays(self, games: list[Game]) -> KnownPlays:
         """
@@ -72,8 +69,8 @@ class BigQueryClient:
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
             """
         print(query)
-        self.mysql_connection.query(query)
-        r = self.mysql_connection.store_result()
+        self.connection.query(query)
+        r = self.connection.store_result()
         results = [row for row in r.fetch_row(maxrows=0, how=1)]
         known_plays: KnownPlays = {}
         for r in results:
@@ -87,7 +84,7 @@ class BigQueryClient:
         self, tweetable_play: TweetablePlay, state: State, is_match: bool
     ) -> None:
         q = f"""
-            INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
+            INSERT INTO tweetable_plays (game_id, play_id, sport, completed_at,
             tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, tweet_text, player_id, team_id)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
@@ -100,17 +97,16 @@ class BigQueryClient:
             tweetable_play.game_id,
             tweetable_play.player_name,
         )
-        self.client.query(q, job_config=self.job_config).result()
         if not self.dry_run:
-            self.mysql_connection.query(q.replace("mlb_alphabet_game.", ""))
+            self.connection.query(q.replace("mlb_alphabet_game.", ""))
         if is_match and not self.dry_run:
             GoogleCloudStorageClient.store_latest_plays()
 
     def get_initial_state(self) -> State:
-        self.mysql_connection.query(
+        self.connection.query(
             f"SELECT current_letter, current_letter as initial_current_letter, times_cycled, times_cycled as initial_times_cycled, season, season as initial_season, tweet_id, tweet_id as initial_tweet_id, scores_since_last_match, scores_since_last_match as initial_scores_since_last_match FROM state where sport = '{self.league_code}';"
         )
-        r = self.mysql_connection.store_result()
+        r = self.connection.store_result()
         rows = r.fetch_row(maxrows=1, how=1)
         # Will only have one row
         for row in rows:
@@ -135,7 +131,7 @@ class BigQueryClient:
         q = f"UPDATE state SET current_letter = '{state.current_letter}', times_cycled = {state.times_cycled}, season = '{state.season}', tweet_id = {state.tweet_id}{f', scores_since_last_match = {state.scores_since_last_match}' if state.scores_since_last_match is not None else ''} WHERE sport='{self.league_code}';"
         print(q)
         if not self.dry_run:
-            self.mysql_connection.query(q)
+            self.connection.query(q)
 
     def _escape_string(self, string: str) -> str:
         return string.replace("'", "\\'").replace("\n", " ")

@@ -26,7 +26,7 @@ This code is run in a Google Cloud Function, triggered every 2 minutes via Googl
 
 # Dry run
 
-Set `DRY_RUN=True` in `.env` to not restrict plays to the latest, don't actually tweet, and don't update BigQuery. It will print the tweets to the console.
+Set `DRY_RUN=True` in `.env` to not restrict plays to the latest, don't actually tweet, and don't update MySQL. It will print the tweets to the console.
 
 # Poetry to requirements.txt
 
