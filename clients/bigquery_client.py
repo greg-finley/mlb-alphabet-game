@@ -44,10 +44,7 @@ class BigQueryClient:
         return [g for g in games if g.game_id not in completed_game_ids]
 
     def set_completed_games(self, games: list[Game]) -> None:
-        complete_games: list[Game] = []
-        for g in games:
-            if g.is_complete:
-                complete_games.append(g)
+        complete_games = [g for g in games if g.is_complete]
 
         if complete_games:
             q = """

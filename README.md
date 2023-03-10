@@ -22,7 +22,7 @@ The tweeted plays are available via an API. The code powering the API and its do
 
 # Google Cloud Function
 
-This code is run in a Google Cloud Function, triggered every 2 minutes via Google Cloud Scheduler. Keep a prior state in Google BigQuery (cheaper than making a Postgres instance in the cloud, though Postgres is of course the better choice) of the target letter, the number of times we have cycled through the alphabet, and the season period (preseason, regular season, playoffs). As we poll for today's plays, process any tweetable plays we have not seen before. Tweet a picture if the player's name matches the target letter, or reply to the previous thread if not.
+This code is run in a Google Cloud Function, triggered every 2 minutes via Google Cloud Scheduler. Keep a prior state of the target letter, the number of times we have cycled through the alphabet, and the season period (preseason, regular season, playoffs). As we poll for today's plays, process any tweetable plays we have not seen before. Tweet a picture if the player's name matches the target letter, or reply to the previous thread if not.
 
 # Dry run
 
