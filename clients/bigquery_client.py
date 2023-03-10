@@ -99,6 +99,8 @@ class BigQueryClient:
             tweetable_play.player_name,
         )
         self.client.query(q, job_config=self.job_config).result()
+        if not self.dry_run:
+            self.mysql_connection.query(q.replace("mlb_alphabet_game.", ""))
         if is_match and not self.dry_run:
             GoogleCloudStorageClient.store_latest_plays()
 
