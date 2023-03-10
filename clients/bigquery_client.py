@@ -67,18 +67,20 @@ class BigQueryClient:
             return {}
         query = f"""
                 SELECT play_id, game_id
-                FROM mlb_alphabet_game.tweetable_plays
+                FROM tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
             """
         print(query)
-        results = self.client.query(query, job_config=self.job_config).result()
+        self.mysql_connection.query(query)
+        r = self.mysql_connection.store_result()
+        results = [row for row in r.fetch_row(maxrows=0, how=1)]
         known_plays: KnownPlays = {}
         for r in results:
-            if r.game_id not in known_plays:
-                known_plays[r.game_id] = [r.play_id]
+            if r["game_id"] not in known_plays:
+                known_plays[r["game_id"]] = [r["play_id"]]
             else:
-                known_plays[r.game_id].append(r.play_id)
+                known_plays[r["game_id"]].append(r["play_id"])
         return known_plays
 
     def add_tweetable_play(
