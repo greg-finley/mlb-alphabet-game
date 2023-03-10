@@ -98,7 +98,7 @@ class MySQLClient:
             tweetable_play.player_name,
         )
         if not self.dry_run:
-            self.connection.query(q.replace("mlb_alphabet_game.", ""))
+            self.connection.query(q)
         if is_match and not self.dry_run:
             GoogleCloudStorageClient.store_latest_plays()
 
