@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import datetime
 import os
 
 import MySQLdb
@@ -8,7 +7,7 @@ from google.cloud import bigquery  # type: ignore
 
 from clients.abstract_sports_client import AbstractSportsClient
 from clients.google_cloud_storage_client import GoogleCloudStorageClient
-from my_types import CompletedGame, Game, KnownPlays, State, TweetablePlay
+from my_types import Game, KnownPlays, State, TweetablePlay
 
 
 class BigQueryClient:
@@ -31,34 +30,24 @@ class BigQueryClient:
         )
         self.mysql_connection.autocommit(True)
 
-    def get_completed_games(self) -> list[CompletedGame]:
+    def get_active_games(self, games: list[Game]) -> list[Game]:
         query = f"""
             SELECT game_id, completed_at
             FROM completed_games
-            where sport = '{self.league_code}'
-            order by completed_at desc limit 100
+            where game_id in ({','.join([f"'{g.game_id}'" for g in games])})
+            and sport = '{self.league_code}'
         """
         self.mysql_connection.query(query)
         r = self.mysql_connection.store_result()
-        rows = r.fetch_row(maxrows=100, how=1)
-        # Keep polling games until 15 minutes after they have been marked completed,
-        # in case a call gets overturned or something
-        return [
-            CompletedGame(
-                game_id=r["game_id"],
-                recently_completed=not str(r["completed_at"]) < self._15_minutes_ago,
-            )
-            for r in rows
-        ]
+        completed_game_ids = [row["game_id"] for row in r.fetch_row(maxrows=100, how=1)]
+
+        return [g for g in games if g.game_id not in completed_game_ids]
 
     def set_completed_games(self, games: list[Game]) -> None:
         complete_games: list[Game] = []
-        uncompleted_games: list[Game] = []
         for g in games:
-            if g.is_complete and not g.is_already_marked_as_complete:
+            if g.is_complete:
                 complete_games.append(g)
-            elif g.is_already_marked_as_complete and not g.is_complete:
-                uncompleted_games.append(g)
 
         if complete_games:
             q = """
@@ -69,19 +58,6 @@ class BigQueryClient:
                 q += f"('{g.game_id}', '{self.league_code}', CURRENT_TIMESTAMP()),"
             q = q[:-1]  # remove trailing comma
             print(q)
-            if not self.dry_run:
-                self.mysql_connection.query(q)
-        if uncompleted_games:
-            q = """
-                DELETE FROM completed_games
-                WHERE game_id in (
-            """
-            for g in uncompleted_games:
-                q += f"'{g.game_id}',"
-            q = q[:-1]  # remove trailing comma
-            q += f") and sport = '{self.league_code}'"
-            print(q)
-            self.client.query(q, job_config=self.job_config).result()
             if not self.dry_run:
                 self.mysql_connection.query(q)
 
@@ -160,13 +136,6 @@ class BigQueryClient:
         print(q)
         if not self.dry_run:
             self.mysql_connection.query(q)
-
-    @property
-    def _15_minutes_ago(self) -> str:
-        """Get a time 15 minutes ago from Python, like 2022-10-08 03:12:02.911237 UTC"""
-        dt = datetime.datetime.now(datetime.timezone.utc)
-        dt = dt - datetime.timedelta(minutes=15)
-        return dt.strftime("%Y-%m-%d %H:%M:%S.%f %Z")
 
     def _escape_string(self, string: str) -> str:
         return string.replace("'", "\\'").replace("\n", " ")

@@ -23,23 +23,22 @@ async def main(sports_client: AbstractSportsClient):
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=sports_client)
     twitter_client = TwitterClient(sports_client, dry_run=DRY_RUN)
 
-    # Get games we have already completely process so we don't poll them again
-    completed_games = bigquery_client.get_completed_games()
-
     # Poll for today's games and find all the plays we haven't processed yet
-    games = sports_client.get_current_games(completed_games)
+    games = sports_client.get_current_games()
+    print(f"Found {len(games)} games")
+    active_games = bigquery_client.get_active_games(games)
 
-    if not games:
+    if not active_games:
         print("No incomplete games")
         return
-    print(f"Found {len(games)} active games")
+    print(f"Found {len(active_games)} active games")
 
     # Get the previous state from BigQuery
     state = bigquery_client.get_initial_state()
     print(f"Inital state: {state}")
 
     # Side effect of updating the state if season period changes
-    relevant_games = state.check_for_season_period_change(games)
+    relevant_games = state.check_for_season_period_change(active_games)
 
     known_plays = bigquery_client.get_known_plays(relevant_games)
     num_known_plays = sum(len(plays) for plays in known_plays.values())
@@ -54,7 +53,7 @@ async def main(sports_client: AbstractSportsClient):
         tweetable_plays = tweetable_plays[:5]
 
     if not tweetable_plays:
-        bigquery_client.set_completed_games(games)
+        bigquery_client.set_completed_games(active_games)
         bigquery_client.update_state(state)
         if bigquery_client.mysql_connection:
             bigquery_client.mysql_connection.close()
@@ -83,7 +82,7 @@ async def main(sports_client: AbstractSportsClient):
         bigquery_client.update_state(state)
         bigquery_client.add_tweetable_play(p, state, is_match)
 
-    bigquery_client.set_completed_games(games)
+    bigquery_client.set_completed_games(active_games)
     if bigquery_client.mysql_connection:
         bigquery_client.mysql_connection.close()
 

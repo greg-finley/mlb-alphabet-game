@@ -10,4 +10,4 @@ if __name__ == "__main__":
     DRY_RUN = os.environ.get("DRY_RUN", "false").lower() == "true"
     mlb_client = MLBClient(dry_run=DRY_RUN)
     bigquery_client = BigQueryClient(dry_run=DRY_RUN, sports_client=mlb_client)
-    print(bigquery_client.get_completed_games())
+    # print(bigquery_client.get_active_games())

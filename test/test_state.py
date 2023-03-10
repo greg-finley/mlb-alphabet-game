@@ -82,7 +82,6 @@ def test_check_for_season_period_change(
                 game_id="1",
                 season_period=s,
                 is_complete=False,
-                is_already_marked_as_complete=False,
                 home_team_id=1,
                 away_team_id=2,
             )
@@ -143,7 +142,6 @@ def test_check_for_season_period_change_error(
                 game_id="1",
                 season_period=s,
                 is_complete=False,
-                is_already_marked_as_complete=False,
                 home_team_id=1,
                 away_team_id=2,
             )
