@@ -70,7 +70,6 @@ class BigQueryClient:
                 FROM mlb_alphabet_game.tweetable_plays
                 where sport = '{self.league_code}'
                 and game_id in ({','.join([f"'{g.game_id}'" for g in games])})
-                and deleted = false
             """
         print(query)
         results = self.client.query(query, job_config=self.job_config).result()
@@ -87,11 +86,11 @@ class BigQueryClient:
     ) -> None:
         q = f"""
             INSERT INTO mlb_alphabet_game.tweetable_plays (game_id, play_id, sport, completed_at,
-            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, deleted, tweet_text, player_id, team_id)
+            tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, tweet_text, player_id, team_id)
             VALUES
             ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.league_code}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
-            false, '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
+            '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
         """
         print(
             "Adding tweetable play:",
