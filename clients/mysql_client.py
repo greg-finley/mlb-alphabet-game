@@ -102,7 +102,11 @@ class MySQLClient:
         if not self.dry_run:
             self.connection.query(q)
         if is_match and not self.dry_run:
-            GoogleCloudStorageClient.store_latest_plays()
+            GoogleCloudStorageClient.store_latest_play(
+                game_id=tweetable_play.game_id,
+                play_id=tweetable_play.play_id,
+                sport=self.league_code,
+            )
 
     def get_initial_state(self) -> State:
         self.connection.query(
