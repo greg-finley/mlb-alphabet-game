@@ -28,6 +28,8 @@ class MySQLClient:
         self.connection.autocommit(True)
 
     def get_active_games(self, games: list[Game]) -> list[Game]:
+        if not games:
+            return []
         query = f"""
             SELECT game_id, completed_at
             FROM completed_games
