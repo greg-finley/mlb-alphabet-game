@@ -31,7 +31,7 @@ class NFLClient(AbstractSportsClient):
         )
 
     @property
-    def league_code(self) -> Sport:
+    def sport(self) -> Sport:
         return "NFL"
 
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
@@ -259,6 +259,7 @@ class NFLClient(AbstractSportsClient):
                             score=score,
                             season_period=g.season_period,
                             season_phrase=self.season_phrase(g.season_period),
+                            sport=self.sport,
                         )
                     )
 

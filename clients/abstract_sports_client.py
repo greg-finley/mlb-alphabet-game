@@ -27,7 +27,7 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
-    def league_code(self) -> Sport:
+    def sport(self) -> Sport:
         pass
 
     @property

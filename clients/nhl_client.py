@@ -23,7 +23,7 @@ class NHLClient(AbstractSportsClient):
         self.base_url = "https://statsapi.web.nhl.com/api/v1"
 
     @property
-    def league_code(self) -> Sport:
+    def sport(self) -> Sport:
         return "NHL"
 
     @property
@@ -202,6 +202,7 @@ class NHLClient(AbstractSportsClient):
                                 score=score,
                                 season_period=g.season_period,
                                 season_phrase=self.season_phrase(g.season_period),
+                                sport=self.sport,
                             )
                         )
 

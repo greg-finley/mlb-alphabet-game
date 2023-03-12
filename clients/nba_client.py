@@ -45,7 +45,7 @@ class NBAClient(AbstractSportsClient):
         self.known_players: dict = {}  # Cache
 
     @property
-    def league_code(self) -> Sport:
+    def sport(self) -> Sport:
         return "NBA"
 
     def season_period(self, game_id: str) -> SeasonPeriod:
@@ -114,8 +114,8 @@ class NBAClient(AbstractSportsClient):
             1610612763: "#GrindCity",
             1610612748: "#HEATCulture",
             1610612749: "#FearTheDeer",
-            1610612750: "#WolvesBack",
-            1610612740: "#WBD",
+            1610612750: "#RaisedByWolves",
+            1610612740: "#Pelicans",
             1610612752: "#NewYorkForever",
             1610612760: "#ThunderUp",
             1610612753: "#MagicTogether",
@@ -242,6 +242,7 @@ class NBAClient(AbstractSportsClient):
                             score=score,
                             season_period=g.season_period,
                             season_phrase=self.season_phrase(g.season_period),
+                            sport=self.sport,
                         )
                     )
 

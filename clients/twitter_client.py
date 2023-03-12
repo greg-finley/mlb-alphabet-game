@@ -62,7 +62,7 @@ class TwitterClient:
                         player_id=tweetable_play.player_id,
                         player_name=tweetable_play.player_name,
                         season_phrase=tweetable_play.season_phrase,
-                        sport=self.sports_client.league_code,
+                        sport=self.sports_client.sport,
                         times_cycled=state.times_cycled,
                         tweet_id="1",  # Not actually used
                     ),
@@ -96,7 +96,7 @@ class TwitterClient:
                 # https://twitter.com/twitterdev/status/1623467618400374784
                 print("Scores since last match:", state.scores_since_last_match)
                 if (
-                    self.sports_client.league_code
+                    self.sports_client.sport
                     == "NFL"  # NFL doesn't have very many touchdowns
                     or (((state.scores_since_last_match or -1) % 10) == 0)
                 ):
