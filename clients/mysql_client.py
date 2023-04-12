@@ -89,7 +89,7 @@ class MySQLClient:
             INSERT INTO tweetable_plays (game_id, play_id, sport, completed_at,
             tweet_id, player_name, season_phrase, season_period, next_letter, times_cycled, score, tweet_text, player_id, team_id)
             VALUES
-            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.sport}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id}, '{self._escape_string(tweetable_play.player_name)}',
+            ('{tweetable_play.game_id}', '{tweetable_play.play_id}', '{self.sport}', CURRENT_TIMESTAMP(), {tweetable_play.tweet_id or -1}, '{self._escape_string(tweetable_play.player_name)}',
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
             '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
         """
