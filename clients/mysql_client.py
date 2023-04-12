@@ -93,12 +93,7 @@ class MySQLClient:
             '{tweetable_play.season_phrase}', '{tweetable_play.season_period.value}', '{state.current_letter}', {state.times_cycled}, '{tweetable_play.score}',
             '{self._escape_string(tweetable_play.tweet_text)}', {tweetable_play.player_id}, {tweetable_play.player_team_id})
         """
-        print(
-            "Adding tweetable play:",
-            tweetable_play.play_id,
-            tweetable_play.game_id,
-            tweetable_play.player_name,
-        )
+        print(q)
         if not self.dry_run:
             self.connection.query(q)
         if is_match and not self.dry_run:
