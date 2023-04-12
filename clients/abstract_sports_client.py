@@ -86,7 +86,7 @@ class AbstractSportsClient(ABC):
         elif season_period == SeasonPeriod.REGULAR_SEASON:
             return f"in the {self.season_years} season"
         elif season_period == SeasonPeriod.PLAYOFFS:
-            return f"in the {self.season_year} playoffs"
+            return f"in the 2023 playoffs"
         raise ValueError(f"Unknown season period: {season_period}")
 
     # This is shared between MLB and NHL and overriden in NBA and NFL
