@@ -41,15 +41,6 @@ class MLBClient(AbstractSportsClient):
     def alphabet_game_name(self) -> str:
         return "Home Run"
 
-    @property
-    def season_year(self) -> str:
-        return str(datetime.date.today().year)
-
-    @property
-    def season_years(self) -> str:
-        # Irrelevant for baseball
-        raise NotImplementedError()
-
     def season_period(self, game_type_raw: str) -> SeasonPeriod:
         if game_type_raw in ["S", "E"]:
             return SeasonPeriod.PRESEASON
@@ -61,12 +52,13 @@ class MLBClient(AbstractSportsClient):
         raise ValueError(f"Unexpected game type: {game_type_raw}")
 
     def season_phrase(self, season_period: SeasonPeriod) -> str:
+        year = str(datetime.date.today().year)
         if season_period == SeasonPeriod.PRESEASON:
-            return f"during {self.season_year} spring training"
+            return f"during {year} spring training"
         elif season_period == SeasonPeriod.REGULAR_SEASON:
-            return f"in the {self.season_year} season"
+            return f"in the {year} season"
         elif season_period == SeasonPeriod.PLAYOFFS:
-            return f"in the {self.season_year} playoffs"
+            return f"in the {year} playoffs"
         raise ValueError(f"Unknown season period: {season_period}")
 
     @property

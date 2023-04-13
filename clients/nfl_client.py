@@ -22,15 +22,6 @@ class NFLClient(AbstractSportsClient):
         self.known_rosters: dict = {}
 
     @property
-    def season_year(self) -> str:
-        # Jan regular season games are in the previous year
-        return str(
-            datetime.date.today().year - 1
-            if datetime.date.today().month <= 2
-            else datetime.date.today().year
-        )
-
-    @property
     def sport(self) -> Sport:
         return "NFL"
 
@@ -45,12 +36,20 @@ class NFLClient(AbstractSportsClient):
         raise ValueError(f"Unknown game type {game_type_raw}")
 
     def season_phrase(self, season_period: SeasonPeriod) -> str:
+        # Jan regular season games are in the previous year
+        year = (
+            datetime.date.today().year - 1
+            if datetime.date.today().month <= 2
+            else datetime.date.today().year
+        )
         if season_period == SeasonPeriod.PRESEASON:
-            return f"in the {self.season_year} preseason"
+            return f"in the {year} preseason"
         elif season_period == SeasonPeriod.REGULAR_SEASON:
-            return f"in the {self.season_year} season"
+            return f"in the {year} season"
         elif season_period == SeasonPeriod.PLAYOFFS:
-            return f"in the {self.season_years} playoffs"
+            # If year is 2022, years is 2022-23
+            years = f"{year}-{str(year + 1)[2:]}"
+            return f"in the {years} playoffs"
         raise ValueError(f"Unknown season period: {season_period}")
 
     @property

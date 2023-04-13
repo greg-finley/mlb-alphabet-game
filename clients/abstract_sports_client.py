@@ -35,20 +35,6 @@ class AbstractSportsClient(ABC):
     def alphabet_game_name(self) -> str:
         pass
 
-    # Override for MLB and NFL
-    @property
-    def season_year(self) -> str:
-        return str(
-            datetime.date.today().year
-            if datetime.date.today().month >= 8
-            else datetime.date.today().year - 1
-        )
-
-    # Override for MLB
-    @property
-    def season_years(self) -> str:
-        return f"{self.season_year}-{str(int(self.season_year) + 1)[2:]}"
-
     @property
     @abstractmethod
     def team_to_hashtag(self) -> dict:
@@ -81,12 +67,18 @@ class AbstractSportsClient(ABC):
 
     # For NHL and NBA, overriden in MLB and NFL
     def season_phrase(self, season_period: SeasonPeriod) -> str:
+        real_year = datetime.date.today().year
         if season_period == SeasonPeriod.PRESEASON:
-            return f"in the {self.season_year} preseason"
+            return f"in the {real_year} preseason"
         elif season_period == SeasonPeriod.REGULAR_SEASON:
-            return f"in the {self.season_years} season"
+            base_year = (
+                real_year
+                if datetime.date.today().month >= 8
+                else datetime.date.today().year - 1
+            )
+            return f"in the {base_year}-{str(base_year + 1)[2:]} season"
         elif season_period == SeasonPeriod.PLAYOFFS:
-            return f"in the 2023 playoffs"
+            return f"in the {real_year} playoffs"
         raise ValueError(f"Unknown season period: {season_period}")
 
     # This is shared between MLB and NHL and overriden in NBA and NFL
