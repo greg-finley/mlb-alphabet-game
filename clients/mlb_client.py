@@ -62,43 +62,6 @@ class MLBClient(AbstractSportsClient):
         raise ValueError(f"Unknown season period: {season_period}")
 
     @property
-    def team_to_hashtag(self) -> dict:
-        return {
-            108: "#GoHalos",
-            109: "#Dbacks",
-            110: "#Birdland",
-            111: "#DirtyWater",
-            112: "#NextStartsHere",
-            113: "#ATOBTTR",
-            114: "#ForTheLand",
-            115: "#Rockies",
-            116: "#DetroitRoots",
-            117: "#LevelUp",
-            118: "#TogetherRoyal",
-            119: "#HereToPlay",
-            120: "#NATITUDE",
-            121: "#LGM",
-            133: "#DrumTogether",
-            134: "#LetsGoBucs",
-            135: "#BringTheGold",
-            136: "#SeaUsRise",
-            137: "#SFGameUp",
-            138: "#STLCards",
-            139: "#RaysUp",
-            140: "#StraightUpTX",
-            141: "#NextLevel",
-            142: "#MNTwins",
-            143: "#RingTheBell",
-            144: "#ForTheA",
-            145: "#ChangeTheGame",
-            146: "#MakeItMiami",
-            147: "#RepBX",
-            158: "#ThisIsMyCrew",
-            159: "",
-            160: "",
-        }
-
-    @property
     def team_to_abbrevation(self) -> dict:
         return {
             108: "LAA",

@@ -182,7 +182,7 @@ It's the {self._int_to_ordinal(scores_since_last_match)} {self.sports_client.sco
         else:
             score = self._score_with_spacing(tweetable_play.score)
 
-        return f"""{alert}{tweetable_play.player_name} just {tweet_phrase}! {self.sports_client.get_team_twitter_hashtag(tweetable_play.player_team_id)}
+        return f"""{alert}{tweetable_play.player_name} just {tweet_phrase}!
 
 His name has the letter{'' if len(matching_letters) == 1 else 's'} {self._oxford_comma(matching_letters)}. The next letter in the {self.sports_client.alphabet_game_name} Alphabet Game is now {state.current_letter}.
 

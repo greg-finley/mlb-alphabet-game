@@ -37,11 +37,6 @@ class AbstractSportsClient(ABC):
 
     @property
     @abstractmethod
-    def team_to_hashtag(self) -> dict:
-        pass
-
-    @property
-    @abstractmethod
     def team_to_abbrevation(self) -> dict:
         pass
 
@@ -112,13 +107,6 @@ class AbstractSportsClient(ABC):
                         )
                     )
         return games
-
-    def get_team_twitter_hashtag(self, team_id: int) -> str:
-        try:
-            return self.team_to_hashtag[team_id]
-        except KeyError:
-            print(f"Unknown hashtag for team id: {team_id}")
-            return ""
 
     @abstractmethod
     def get_player_picture(self, player_id: int) -> bytes:

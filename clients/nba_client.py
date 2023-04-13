@@ -95,41 +95,6 @@ class NBAClient(AbstractSportsClient):
         return games
 
     @property
-    def team_to_hashtag(self) -> dict:
-        return {
-            1610612737: "#TrueToAtlanta",
-            1610612738: "#BleedGreen",
-            1610612751: "#NetsWorld",
-            1610612766: "#AllFly",
-            1610612741: "#BullsNation",
-            1610612739: "#LetEmKnow",
-            1610612742: "#MFFL",
-            1610612743: "#MileHighBasketball",
-            1610612765: "#Pistons",
-            1610612744: "#DubNation",
-            1610612745: "#Rockets",
-            1610612754: "#BoomBaby",
-            1610612746: "#ClipperNation",
-            1610612747: "#LakeShow",
-            1610612763: "#GrindCity",
-            1610612748: "#HEATCulture",
-            1610612749: "#FearTheDeer",
-            1610612750: "#RaisedByWolves",
-            1610612740: "#Pelicans",
-            1610612752: "#NewYorkForever",
-            1610612760: "#ThunderUp",
-            1610612753: "#MagicTogether",
-            1610612755: "#PhilaUnite",
-            1610612756: "#ValleyProud",
-            1610612757: "#RipCity",
-            1610612758: "#SacramentoProud",
-            1610612759: "#PorVida",
-            1610612761: "#WeTheNorth",
-            1610612762: "#TakeNote",
-            1610612764: "#DCAboveAll",
-        }
-
-    @property
     def team_to_abbrevation(self) -> dict:
         return {
             1610612737: "ATL",

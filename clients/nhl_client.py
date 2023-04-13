@@ -40,43 +40,6 @@ class NHLClient(AbstractSportsClient):
         raise ValueError(f"Unknown game type: {game_type_raw}")
 
     @property
-    def team_to_hashtag(self) -> dict:
-        return {
-            1: "#NJDevils",
-            2: "#Isles",
-            3: "#NYR",
-            4: "#BringItToBroad",
-            5: "#LetsGoPens",
-            6: "#NHLBruins",
-            7: "#Sabres",
-            8: "#GoHabsGo",
-            9: "#GoSensGo",
-            10: "#LeafsForever",
-            12: "#LetsGoCanes",
-            13: "#TimeToHunt",
-            14: "#GoBolts",
-            15: "#ALLCAPS",
-            16: "#Blackhawks",
-            17: "#LGRW",
-            18: "#Preds",
-            19: "#stlblues",
-            20: "#Flames",
-            21: "#GoAvsGo",
-            22: "#LetsGoOilers",
-            23: "#Canucks",
-            24: "#FlyTogether",
-            25: "#TexasHockey",
-            26: "#GoKingsGo",
-            28: "#SJSharks",
-            29: "#CBJ",
-            30: "#mnwild",
-            52: "#GoJetsGo",
-            53: "#Yotes",
-            54: "#VegasBorn",
-            55: "#SeaKraken",
-        }
-
-    @property
     def team_to_abbrevation(self) -> dict:
         return {
             1: "NJD",

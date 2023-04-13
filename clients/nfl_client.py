@@ -129,43 +129,6 @@ class NFLClient(AbstractSportsClient):
         }
 
     @property
-    def team_to_hashtag(self) -> dict:
-        return {
-            1: "#DirtyBirds",
-            22: "#BirdCityFootball",
-            33: "#RavensFlock",
-            2: "#BillsMafia",
-            29: "#KeepPounding",
-            3: "#DaBears",
-            4: "#RuleTheJungle",
-            5: "#Browns",
-            6: "#DallasCowboys",
-            7: "#BroncosCountry",
-            8: "#OnePride",
-            9: "#GoPackGo",
-            34: "#WeAreTexans",
-            11: "#ForTheShoe",
-            30: "#DUUUVAL",
-            12: "#ChiefsKingdom",
-            13: "#RaiderNation",
-            24: "#BoltUp",
-            14: "#RamsHouse",
-            15: "#FinsUp",
-            16: "#SKOL",
-            17: "#ForeverNE",
-            18: "#Saints",
-            19: "#TogetherBlue",
-            20: "#TakeFlight",
-            21: "#FlyEaglesFly",
-            23: "#HereWeGo",
-            25: "#FTTB",
-            26: "#Seahawks",
-            27: "#GoBucs",
-            10: "#Titans",
-            28: "#HTTC",
-        }
-
-    @property
     def twitter_credentials(self) -> TwitterCredentials:
         return TwitterCredentials(
             consumer_key=os.environ.get("NFL_TWITTER_CONSUMER_KEY", ""),
